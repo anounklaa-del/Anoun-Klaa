@@ -10,7 +10,62 @@ export type MarginMode = 'auto' | 'manual';
 
 export type IccProfileId = 'FOGRA39' | 'GRACoL2006' | 'JapanColor2001';
 
-export type MainWorkspaceTab = 'studio' | 'mockup3d' | 'export' | 'docs';
+export type MainWorkspaceTab = 'studio' | 'sticker' | 'students' | 'mockup3d' | 'export' | 'docs';
+
+export type StickerGroupingMode = 'tier_room' | 'class_room';
+
+export interface StickerConfig {
+  selectedRoom: string;
+  stickerW: number;
+  stickerH: number;
+  gapXmm: number;
+  gapYmm: number;
+  marginTopMm: number;
+  marginBottomMm: number;
+  marginLeftMm: number;
+  marginRightMm: number;
+  showCropMarks: boolean;
+  showEmptyTiers: boolean;
+  groupingMode: StickerGroupingMode;
+  zoomPct: number;
+  searchQuery: string;
+}
+
+export interface StickerGeometry {
+  paperW: number;
+  paperH: number;
+  stickerW: number;
+  stickerH: number;
+  gapXmm: number;
+  gapYmm: number;
+  cols: number;
+  rows: number;
+  gridW: number;
+  gridH: number;
+  originX: number;
+  originY: number;
+  marginRightActual: number;
+  marginBottomActual: number;
+  overflowsPaper: boolean;
+  stickersPerSheet: number;
+}
+
+export const DEFAULT_STICKER_CONFIG: StickerConfig = {
+  selectedRoom: '',
+  stickerW: 96,
+  stickerH: 52,
+  gapXmm: 4,
+  gapYmm: 3,
+  marginTopMm: 12.5,
+  marginBottomMm: 12.5,
+  marginLeftMm: 7,
+  marginRightMm: 7,
+  showCropMarks: true,
+  showEmptyTiers: true,
+  groupingMode: 'tier_room',
+  zoomPct: 58,
+  searchQuery: '',
+};
 
 export interface PrepressConfig {
   paper: PaperPreset;
@@ -202,5 +257,60 @@ export function computeSheetGeometry(cfg: PrepressConfig): SheetGeometry {
     overflowsPaper,
     cardsPerSheet: cols * rows,
     isFoldable,
+  };
+}
+
+export function computeStickerGeometry(
+  paperCfg: Pick<PrepressConfig, 'paper' | 'customW' | 'customH'>,
+  stickerCfg: StickerConfig,
+): StickerGeometry {
+  const [paperW, paperH] =
+    paperCfg.paper === 'custom'
+      ? [Math.max(50, paperCfg.customW), Math.max(50, paperCfg.customH)]
+      : [PAPER_DIMENSIONS[paperCfg.paper][0], PAPER_DIMENSIONS[paperCfg.paper][1]];
+
+  const stickerW = Math.max(30, stickerCfg.stickerW || 96);
+  const stickerH = Math.max(25, stickerCfg.stickerH || 64);
+  const gapXmm = Math.max(0, stickerCfg.gapXmm ?? 0);
+  const gapYmm = Math.max(0, stickerCfg.gapYmm ?? 0);
+  const originX = Math.max(0, stickerCfg.marginLeftMm ?? 0);
+  const originY = Math.max(0, stickerCfg.marginTopMm ?? 0);
+  const marginRight = Math.max(0, stickerCfg.marginRightMm ?? 0);
+  const marginBottom = Math.max(0, stickerCfg.marginBottomMm ?? 0);
+
+  const availW = paperW - originX - marginRight;
+  const availH = paperH - originY - marginBottom;
+
+  const cols = Math.max(1, Math.floor((availW + gapXmm + 0.001) / (stickerW + gapXmm)));
+  const rows = Math.max(1, Math.floor((availH + gapYmm + 0.001) / (stickerH + gapYmm)));
+
+  const gridW = cols * stickerW + (cols - 1) * gapXmm;
+  const gridH = rows * stickerH + (rows - 1) * gapYmm;
+
+  const marginRightActual = +(paperW - (originX + gridW)).toFixed(2);
+  const marginBottomActual = +(paperH - (originY + gridH)).toFixed(2);
+  const overflowsPaper =
+    originX + gridW > paperW + 0.05 ||
+    originY + gridH > paperH + 0.05 ||
+    marginRightActual < -0.05 ||
+    marginBottomActual < -0.05;
+
+  return {
+    paperW,
+    paperH,
+    stickerW,
+    stickerH,
+    gapXmm,
+    gapYmm,
+    cols,
+    rows,
+    gridW,
+    gridH,
+    originX,
+    originY,
+    marginRightActual,
+    marginBottomActual,
+    overflowsPaper,
+    stickersPerSheet: cols * rows,
   };
 }

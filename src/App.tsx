@@ -2,17 +2,22 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Archive,
   Box,
-  FileCheck2,
   FolderArchive,
   LayoutGrid,
   Printer,
+  Tag,
   Upload,
+  UserPlus,
+  Users,
 } from 'lucide-react';
 import { CardSheetPreview } from './components/CardSheetPreview';
+import { StickerSheetPagesBlock } from './components/DeskStickerRenderer';
+import { DeskStickerStudio } from './components/DeskStickerStudio';
 import { ExportArchivePanel } from './components/ExportArchivePanel';
 import { Mockup3DViewer } from './components/Mockup3DViewer';
 import { SheetPagesBlock } from './components/PrintSheetRenderer';
 import { ProductionDocsPanel } from './components/ProductionDocsPanel';
+import { StudentDataManager } from './components/StudentDataManager';
 import {
   SCHEDULES_PASTE_NOVEMBER,
   STUDENTS_MASTER,
@@ -20,7 +25,9 @@ import {
 } from './data/pasData';
 import {
   computeSheetGeometry,
+  computeStickerGeometry,
   DEFAULT_PREPRESS_CONFIG,
+  DEFAULT_STICKER_CONFIG,
   PAPER_DIMENSIONS,
   type CropMarkStyle,
   type FlipMode,
@@ -28,8 +35,10 @@ import {
   type MainWorkspaceTab,
   type PaperPreset,
   type PrepressConfig,
+  type StickerConfig,
 } from './types/prepress';
 import { buildStructuredZipArchive } from './utils/archiveExporter';
+import { buildDeskStickers } from './utils/deskStickerBuilder';
 
 function triggerBlobDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -43,7 +52,18 @@ function triggerBlobDownload(blob: Blob, filename: string) {
 }
 
 export default function App() {
-  const [students, setStudents] = useState<StudentRecord[]>(STUDENTS_MASTER);
+  const [students, setStudents] = useState<StudentRecord[]>(() => {
+    try {
+      const saved = localStorage.getItem('pas_students_custom_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // ignore storage failure
+    }
+    return STUDENTS_MASTER;
+  });
   const [config, setConfig] = useState<PrepressConfig>(() => {
     try {
       const saved = localStorage.getItem('pas_prepress_v2_cfg');
@@ -63,13 +83,34 @@ export default function App() {
     }
     return DEFAULT_PREPRESS_CONFIG;
   });
+  const [stickerConfig, setStickerConfig] = useState<StickerConfig>(() => {
+    try {
+      const saved = localStorage.getItem('pas_sticker_cfg_v2');
+      if (saved) return { ...DEFAULT_STICKER_CONFIG, ...JSON.parse(saved) };
+    } catch {
+      // ignore storage failure
+    }
+    return DEFAULT_STICKER_CONFIG;
+  });
   const [activeTab, setActiveTab] = useState<MainWorkspaceTab>('studio');
+  const [exportSubTab, setExportSubTab] = useState<'archive' | 'docs'>('archive');
   const [selectedStudentNo, setSelectedStudentNo] = useState<string>(STUDENTS_MASTER[0].no);
   const [sheetIndex, setSheetIndex] = useState<number>(0);
+  const [stickerSheetIndex, setStickerSheetIndex] = useState<number>(0);
   const [printScope, setPrintScope] = useState<'all' | 'current'>('all');
+  const [stickerPrintScope, setStickerPrintScope] = useState<'all' | 'current'>('all');
   const [zipBusy, setZipBusy] = useState(false);
   const [csvFeedback, setCsvFeedback] = useState<string | null>(null);
   const pendingPrintRef = useRef(false);
+
+  const persistStudents = (next: StudentRecord[]) => {
+    setStudents(next);
+    try {
+      localStorage.setItem('pas_students_custom_v1', JSON.stringify(next));
+    } catch {
+      // ignore storage quota errors
+    }
+  };
 
   const updateConfig = (patch: Partial<PrepressConfig>) => {
     setConfig((prev) => {
@@ -81,6 +122,50 @@ export default function App() {
       }
       return next;
     });
+  };
+
+  const updateStickerConfig = (patch: Partial<StickerConfig>) => {
+    setStickerConfig((prev) => {
+      const next = { ...prev, ...patch };
+      try {
+        localStorage.setItem('pas_sticker_cfg_v2', JSON.stringify(next));
+      } catch {
+        // ignore storage quota errors
+      }
+      return next;
+    });
+  };
+
+  const handleAddStudent = (record: StudentRecord) => {
+    const next = [...students, record];
+    persistStudents(next);
+    setSelectedStudentNo(record.no);
+  };
+
+  const handleUpdateStudent = (originalNo: string, updated: StudentRecord) => {
+    const next = students.map((s) => (s.no === originalNo ? updated : s));
+    persistStudents(next);
+    if (selectedStudentNo === originalNo) setSelectedStudentNo(updated.no);
+  };
+
+  const handleDeleteStudent = (no: string) => {
+    const next = students.filter((s) => s.no !== no);
+    if (next.length === 0) return;
+    persistStudents(next);
+    if (selectedStudentNo === no) setSelectedStudentNo(next[0].no);
+  };
+
+  const handleResetStudents = () => {
+    setStudents(STUDENTS_MASTER);
+    setSelectedStudentNo(STUDENTS_MASTER[0].no);
+    setSheetIndex(0);
+    setStickerSheetIndex(0);
+    setCsvFeedback(null);
+    try {
+      localStorage.removeItem('pas_students_custom_v1');
+    } catch {
+      // ignore
+    }
   };
 
   const classList = useMemo(
@@ -116,11 +201,55 @@ export default function App() {
     return Array.from({ length: totalSheets }, (_, i) => i);
   }, [printScope, safeSheetIdx, totalSheets]);
 
-  const totalPrintPages = useMemo(() => {
+  const totalCardPrintPages = useMemo(() => {
     if (config.imposition === 'calibration') return 2;
     const sheetCount = printSheetIndices.length;
     return config.imposition === 'duplex' ? sheetCount * 2 : sheetCount;
   }, [config.imposition, printSheetIndices.length]);
+
+  const filteredStickers = useMemo(() => {
+    const base = buildDeskStickers(
+      students,
+      stickerConfig.groupingMode,
+      stickerConfig.selectedRoom || undefined,
+    );
+    const q = stickerConfig.searchQuery.trim().toLowerCase();
+    if (!q) return base;
+    return base.filter((st) => {
+      if (st.mejaLabel.toLowerCase().includes(q) || `ruang ${st.ruang}`.toLowerCase().includes(q)) {
+        return true;
+      }
+      return st.slots.some(
+        (slot) =>
+          slot.student &&
+          (slot.student.nama.toLowerCase().includes(q) ||
+            slot.student.no.toLowerCase().includes(q) ||
+            slot.student.kelas.toLowerCase().includes(q)),
+      );
+    });
+  }, [
+    students,
+    stickerConfig.groupingMode,
+    stickerConfig.selectedRoom,
+    stickerConfig.searchQuery,
+  ]);
+
+  const stickerGeo = useMemo(
+    () => computeStickerGeometry(config, stickerConfig),
+    [config, stickerConfig],
+  );
+  const totalStickerSheets = Math.max(
+    1,
+    Math.ceil(filteredStickers.length / stickerGeo.stickersPerSheet),
+  );
+  const safeStickerSheetIdx = Math.min(stickerSheetIndex, totalStickerSheets - 1);
+  const printStickerIndices = useMemo(() => {
+    if (stickerPrintScope === 'current') return [safeStickerSheetIdx];
+    return Array.from({ length: totalStickerSheets }, (_, i) => i);
+  }, [stickerPrintScope, safeStickerSheetIdx, totalStickerSheets]);
+
+  const totalPrintPages =
+    activeTab === 'sticker' ? printStickerIndices.length : totalCardPrintPages;
 
   const missingScheduleCount = useMemo(
     () => filteredStudents.filter((s) => !SCHEDULES_PASTE_NOVEMBER[s.kelas]).length,
@@ -135,13 +264,23 @@ export default function App() {
       window.print();
     });
     return () => cancelAnimationFrame(timer);
-  }, [printScope, safeSheetIdx, filteredStudents, config]);
+  }, [printScope, stickerPrintScope, safeSheetIdx, safeStickerSheetIdx, filteredStudents, filteredStickers, config, stickerConfig]);
 
   const handleDirectPrint = (scopeOverride?: 'all' | 'current') => {
     const targetScope = scopeOverride ?? printScope;
     if (targetScope !== printScope) {
       pendingPrintRef.current = true;
       setPrintScope(targetScope);
+    } else {
+      window.print();
+    }
+  };
+
+  const handleStickerPrint = (scopeOverride?: 'all' | 'current') => {
+    const targetScope = scopeOverride ?? stickerPrintScope;
+    if (targetScope !== stickerPrintScope) {
+      pendingPrintRef.current = true;
+      setStickerPrintScope(targetScope);
     } else {
       window.print();
     }
@@ -173,9 +312,10 @@ export default function App() {
         user: r[4] || r[0],
       }));
     if (parsed.length > 0) {
-      setStudents(parsed);
+      persistStudents(parsed);
       setSelectedStudentNo(parsed[0].no);
       setSheetIndex(0);
+      setStickerSheetIndex(0);
       setCsvFeedback(`Terimpor ${parsed.length} data siswa dari ${file.name}`);
     }
     ev.target.value = '';
@@ -197,10 +337,11 @@ export default function App() {
   };
 
   const navItems: Array<{ id: MainWorkspaceTab; label: string; icon: React.ReactNode }> = [
-    { id: 'studio', label: 'Desain & Presisi', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
-    { id: 'mockup3d', label: 'Pratinjau 3D', icon: <Box className="w-3.5 h-3.5" /> },
-    { id: 'export', label: 'Ekspor & Arsip', icon: <FolderArchive className="w-3.5 h-3.5" /> },
-    { id: 'docs', label: 'Panduan & Laporan', icon: <FileCheck2 className="w-3.5 h-3.5" /> },
+    { id: 'studio', label: 'Kartu PAS', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
+    { id: 'sticker', label: 'Stiker Meja', icon: <Tag className="w-3.5 h-3.5" /> },
+    { id: 'students', label: 'Data Siswa', icon: <Users className="w-3.5 h-3.5" /> },
+    { id: 'mockup3d', label: 'Mockup 3D', icon: <Box className="w-3.5 h-3.5" /> },
+    { id: 'export', label: 'Arsip & SOP', icon: <FolderArchive className="w-3.5 h-3.5" /> },
   ];
 
   return (
@@ -210,25 +351,26 @@ export default function App() {
 
       {/* Interactive Screen Application */}
       <div className="screen-only flex flex-col h-screen w-screen overflow-hidden bg-[#F3F5F9] text-[#131C31]">
-        {/* Top Bar Contract: Wordmark Left — Nav Links Center — Print & ZIP CTA Right */}
-        <header className="no-print h-14 px-5 bg-white border-b border-[#DCE2EE] flex items-center justify-between gap-4 shrink-0">
+        {/* Top Bar Contract: Wordmark Left — 5 Nav Links Center — Print & ZIP CTA Right */}
+        <header className="no-print h-14 px-5 bg-white border-b border-[#DCE2EE] flex items-center justify-between gap-6 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-7 h-7 bg-[#1F3864] flex items-center justify-center text-[#C9A227] font-display font-extrabold text-sm shrink-0">
               S1
             </div>
             <div className="min-w-0">
-              <h1 className="font-display font-bold text-sm text-[#1F3864] truncate">
-                SMAN 1 ALALAK · Studio Pracetak Kartu PAS
+              <h1 className="font-display font-bold text-sm text-[#1F3864] truncate whitespace-nowrap">
+                SMAN 1 ALALAK · Studio Kartu PAS
               </h1>
               <p className="font-mono text-[11px] text-[#64748B] truncate tabular-nums">
-                Jadwal Paste November 2026 · {filteredStudents.length} Siswa · {config.dpi} DPI CMYK
+                Paste Nov 2026 · {students.length} Siswa · {config.dpi} DPI CMYK
               </p>
             </div>
           </div>
 
           <nav className="flex items-center gap-1 overflow-x-auto">
             {navItems.map((item) => {
-              const active = activeTab === item.id;
+              const active =
+                activeTab === item.id || (item.id === 'export' && activeTab === 'docs');
               return (
                 <button
                   key={item.id}
@@ -250,12 +392,20 @@ export default function App() {
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => handleDirectPrint()}
+              onClick={() =>
+                activeTab === 'sticker' ? handleStickerPrint() : handleDirectPrint()
+              }
               className="flex items-center gap-1.5 px-3.5 py-2 bg-[#C9A227] hover:bg-[#B58F1E] text-[#0F172A] text-xs font-bold whitespace-nowrap shrink-0"
-              title={`Cetak langsung ${totalPrintPages} halaman (${geo.paperW}×${geo.paperH} mm)`}
+              title={
+                activeTab === 'sticker'
+                  ? `Cetak langsung ${totalPrintPages} halaman Stiker Meja`
+                  : `Cetak langsung ${totalPrintPages} halaman Kartu PAS`
+              }
             >
               <Printer className="w-3.5 h-3.5" />
-              Cetak ({totalPrintPages} Hal)
+              {activeTab === 'sticker'
+                ? `Cetak Stiker (${totalPrintPages} Hal)`
+                : `Cetak (${totalPrintPages} Hal)`}
             </button>
             <button
               type="button"
@@ -683,6 +833,15 @@ export default function App() {
                   ))}
                 </select>
 
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('students')}
+                  className="flex items-center justify-center gap-2 w-full px-3 py-2 mb-2 bg-[#EEF2FA] hover:bg-[#E2E8F0] border border-[#CBD5E1] text-[#1F3864] font-semibold"
+                >
+                  <UserPlus className="w-3.5 h-3.5" />
+                  Tambah / Kelola Data Manual
+                </button>
+
                 <label className="flex items-center justify-center gap-2 w-full px-3 py-2 border border-dashed border-[#94A3B8] hover:border-[#1F3864] hover:bg-[#F8FAFC] text-[#1F3864] font-medium cursor-pointer">
                   <Upload className="w-3.5 h-3.5" />
                   Impor CSV Siswa Baru
@@ -755,19 +914,83 @@ export default function App() {
                 onPrintBatch={handleDirectPrint}
               />
             )}
+            {activeTab === 'sticker' && (
+              <DeskStickerStudio
+                students={students}
+                paperConfig={config}
+                stickerConfig={stickerConfig}
+                sheetIndex={safeStickerSheetIdx}
+                onSheetIndexChange={setStickerSheetIndex}
+                onPaperConfigChange={updateConfig}
+                onStickerConfigChange={updateStickerConfig}
+                onPrintStickers={handleStickerPrint}
+              />
+            )}
+            {activeTab === 'students' && (
+              <StudentDataManager
+                students={students}
+                groupingMode={stickerConfig.groupingMode}
+                onAddStudent={handleAddStudent}
+                onUpdateStudent={handleUpdateStudent}
+                onDeleteStudent={handleDeleteStudent}
+                onResetStudents={handleResetStudents}
+                onImportCsv={handleCsvUpload}
+                onInspectStudentCard={(st) => {
+                  setSelectedStudentNo(st.no);
+                  setActiveTab('studio');
+                }}
+                csvFeedback={csvFeedback}
+              />
+            )}
             {activeTab === 'mockup3d' && (
               <Mockup3DViewer student={selectedStudent} config={config} />
             )}
-            {activeTab === 'export' && (
-              <ExportArchivePanel
-                filteredStudents={filteredStudents}
-                selectedStudent={selectedStudent}
-                config={config}
-                onConfigChange={updateConfig}
-              />
-            )}
-            {activeTab === 'docs' && (
-              <ProductionDocsPanel filteredStudents={filteredStudents} config={config} />
+            {(activeTab === 'export' || activeTab === 'docs') && (
+              <div className="flex flex-col h-full overflow-hidden">
+                <div className="bg-white border-b border-[#DCE2EE] px-6 py-2 flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExportSubTab('archive');
+                      setActiveTab('export');
+                    }}
+                    className={`px-3 py-1.5 text-xs font-semibold border whitespace-nowrap ${
+                      activeTab === 'export' && exportSubTab === 'archive'
+                        ? 'bg-[#1F3864] text-white border-[#1F3864]'
+                        : 'bg-white text-[#44546A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
+                    }`}
+                  >
+                    Ekspor PDF/X-1a &amp; Arsip ZIP
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExportSubTab('docs');
+                      setActiveTab('export');
+                    }}
+                    className={`px-3 py-1.5 text-xs font-semibold border whitespace-nowrap ${
+                      activeTab === 'docs' || (activeTab === 'export' && exportSubTab === 'docs')
+                        ? 'bg-[#1F3864] text-white border-[#1F3864]'
+                        : 'bg-white text-[#44546A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
+                    }`}
+                  >
+                    Panduan Produksi &amp; Laporan Efisiensi
+                  </button>
+                </div>
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  {activeTab === 'docs' || exportSubTab === 'docs' ? (
+                    <ProductionDocsPanel filteredStudents={filteredStudents} config={config} />
+                  ) : (
+                    <ExportArchivePanel
+                      filteredStudents={filteredStudents}
+                      allStudents={students}
+                      selectedStudent={selectedStudent}
+                      config={config}
+                      onConfigChange={updateConfig}
+                    />
+                  )}
+                </div>
+              </div>
             )}
           </main>
         </div>
@@ -777,20 +1000,31 @@ export default function App() {
       <div
         className="print-only-root"
         style={{
-          filter: config.cmykSoftProof
-            ? 'contrast(0.95) saturate(0.92) sepia(0.04)'
-            : undefined,
+          filter:
+            activeTab !== 'sticker' && config.cmykSoftProof
+              ? 'contrast(0.95) saturate(0.92) sepia(0.04)'
+              : undefined,
         }}
       >
-        {filteredStudents.length > 0 && (
-          <SheetPagesBlock
-            students={filteredStudents}
-            config={config}
-            geo={geo}
-            sheetIndices={printSheetIndices}
-            isPrintDom
-          />
-        )}
+        {activeTab === 'sticker'
+          ? filteredStickers.length > 0 && (
+              <StickerSheetPagesBlock
+                stickers={filteredStickers}
+                stickerConfig={stickerConfig}
+                geo={stickerGeo}
+                sheetIndices={printStickerIndices}
+                forPrint
+              />
+            )
+          : filteredStudents.length > 0 && (
+              <SheetPagesBlock
+                students={filteredStudents}
+                config={config}
+                geo={geo}
+                sheetIndices={printSheetIndices}
+                isPrintDom
+              />
+            )}
       </div>
     </>
   );

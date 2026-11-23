@@ -27,6 +27,7 @@ import { generatePdfX1aDocument } from '../utils/pdfxWriter';
 
 interface ExportArchivePanelProps {
   filteredStudents: StudentRecord[];
+  allStudents?: StudentRecord[];
   selectedStudent: StudentRecord;
   config: PrepressConfig;
   onConfigChange: (patch: Partial<PrepressConfig>) => void;
@@ -45,6 +46,7 @@ function triggerDownload(blob: Blob, filename: string) {
 
 export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
   filteredStudents,
+  allStudents,
   selectedStudent,
   config,
   onConfigChange,
@@ -113,7 +115,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
   };
 
   const handleDownloadStandaloneHtml = () => {
-    const html = generateStandalonePasteNovHtml(STUDENTS_MASTER);
+    const html = generateStandalonePasteNovHtml(allStudents ?? STUDENTS_MASTER);
     triggerDownload(
       new Blob([html], { type: 'text/html;charset=utf-8' }),
       'Cetak_Kartu_Ujian_PAS_Paste_November.html',
