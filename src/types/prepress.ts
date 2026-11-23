@@ -6,6 +6,8 @@ export type CropMarkStyle = 'full' | 'crop' | 'none';
 
 export type FlipMode = 'long' | 'short';
 
+export type MarginMode = 'auto' | 'manual';
+
 export type IccProfileId = 'FOGRA39' | 'GRACoL2006' | 'JapanColor2001';
 
 export type MainWorkspaceTab = 'studio' | 'mockup3d' | 'export' | 'docs';
@@ -16,8 +18,14 @@ export interface PrepressConfig {
   customH: number;
   cardW: number;
   cardH: number;
-  gapMm: number;
+  gapXmm: number;
+  gapYmm: number;
+  marginMode: MarginMode;
   marginMm: number;
+  marginTopMm: number;
+  marginBottomMm: number;
+  marginLeftMm: number;
+  marginRightMm: number;
   bleedMm: number;
   showBleedGuide: boolean;
   showFoldMarks: boolean;
@@ -45,7 +53,8 @@ export interface SheetGeometry {
   slotH: number;
   cardW: number;
   cardH: number;
-  gapMm: number;
+  gapXmm: number;
+  gapYmm: number;
   bleedMm: number;
   cols: number;
   rows: number;
@@ -53,6 +62,11 @@ export interface SheetGeometry {
   gridH: number;
   originX: number;
   originY: number;
+  backOriginX: number;
+  backOriginY: number;
+  marginRightActual: number;
+  marginBottomActual: number;
+  overflowsPaper: boolean;
   cardsPerSheet: number;
   isFoldable: boolean;
 }
@@ -95,8 +109,14 @@ export const DEFAULT_PREPRESS_CONFIG: PrepressConfig = {
   customH: 297,
   cardW: 101.6,
   cardH: 68.4,
-  gapMm: 0,
+  gapXmm: 0,
+  gapYmm: 0,
+  marginMode: 'auto',
   marginMm: 3.4,
+  marginTopMm: 11.7,
+  marginBottomMm: 11.7,
+  marginLeftMm: 3.4,
+  marginRightMm: 3.4,
   bleedMm: 3.0,
   showBleedGuide: true,
   showFoldMarks: true,
@@ -123,19 +143,41 @@ export function computeSheetGeometry(cfg: PrepressConfig): SheetGeometry {
       ? [Math.max(50, cfg.customW), Math.max(50, cfg.customH)]
       : [PAPER_DIMENSIONS[cfg.paper][0], PAPER_DIMENSIONS[cfg.paper][1]];
 
+  const gapXmm = Math.max(0, cfg.gapXmm ?? 0);
+  const gapYmm = Math.max(0, cfg.gapYmm ?? 0);
+
   const isFoldable = cfg.imposition === 'foldable';
-  // In vertical bifold mode, back + front share the horizontal crease fold edge so total slot is cardW x (cardH * 2)
   const slotW = cfg.cardW;
   const slotH = isFoldable ? cfg.cardH * 2 : cfg.cardH;
 
-  const cols = Math.max(1, Math.floor((paperW - 2 * cfg.marginMm + cfg.gapMm) / (slotW + cfg.gapMm)));
-  const rows = Math.max(1, Math.floor((paperH - 2 * cfg.marginMm + cfg.gapMm) / (slotH + cfg.gapMm)));
+  const isManualMargin = cfg.marginMode === 'manual';
+  const availW = isManualMargin
+    ? paperW - Math.max(0, cfg.marginLeftMm) - Math.max(0, cfg.marginRightMm)
+    : paperW - 2 * Math.max(0, cfg.marginMm);
+  const availH = isManualMargin
+    ? paperH - Math.max(0, cfg.marginTopMm) - Math.max(0, cfg.marginBottomMm)
+    : paperH - 2 * Math.max(0, cfg.marginMm);
 
-  const gridW = cols * slotW + (cols - 1) * cfg.gapMm;
-  const gridH = rows * slotH + (rows - 1) * cfg.gapMm;
+  const cols = Math.max(1, Math.floor((availW + gapXmm + 0.001) / (slotW + gapXmm)));
+  const rows = Math.max(1, Math.floor((availH + gapYmm + 0.001) / (slotH + gapYmm)));
 
-  const originX = (paperW - gridW) / 2;
-  const originY = (paperH - gridH) / 2;
+  const gridW = cols * slotW + (cols - 1) * gapXmm;
+  const gridH = rows * slotH + (rows - 1) * gapYmm;
+
+  const originX = isManualMargin ? Math.max(0, cfg.marginLeftMm) : (paperW - gridW) / 2;
+  const originY = isManualMargin ? Math.max(0, cfg.marginTopMm) : (paperH - gridH) / 2;
+
+  // Mirror back origin cleanly when manual margins are asymmetric so front/back align 0.0mm
+  const backOriginX = cfg.flipMode === 'long' ? paperW - (originX + gridW) : originX;
+  const backOriginY = cfg.flipMode === 'short' ? paperH - (originY + gridH) : originY;
+
+  const marginRightActual = +(paperW - (originX + gridW)).toFixed(2);
+  const marginBottomActual = +(paperH - (originY + gridH)).toFixed(2);
+  const overflowsPaper =
+    originX + gridW > paperW + 0.05 ||
+    originY + gridH > paperH + 0.05 ||
+    marginRightActual < -0.05 ||
+    marginBottomActual < -0.05;
 
   return {
     paperW,
@@ -144,7 +186,8 @@ export function computeSheetGeometry(cfg: PrepressConfig): SheetGeometry {
     slotH,
     cardW: cfg.cardW,
     cardH: cfg.cardH,
-    gapMm: cfg.gapMm,
+    gapXmm,
+    gapYmm,
     bleedMm: cfg.bleedMm,
     cols,
     rows,
@@ -152,6 +195,11 @@ export function computeSheetGeometry(cfg: PrepressConfig): SheetGeometry {
     gridH,
     originX,
     originY,
+    backOriginX,
+    backOriginY,
+    marginRightActual,
+    marginBottomActual,
+    overflowsPaper,
     cardsPerSheet: cols * rows,
     isFoldable,
   };

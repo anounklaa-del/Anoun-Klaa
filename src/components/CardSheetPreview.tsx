@@ -70,7 +70,7 @@ export const CardSheetPreview: React.FC<CardSheetPreviewProps> = ({
             <ChevronRight className="w-4 h-4 text-[#1F3864]" />
           </button>
           <span className="text-xs text-[#55637A] font-mono tabular-nums whitespace-nowrap ml-2">
-            {geo.cols}×{geo.rows} ({geo.cardsPerSheet}/lembar) · Margin {geo.originX.toFixed(1)}×{geo.originY.toFixed(1)}mm
+            {geo.cols}×{geo.rows} ({geo.cardsPerSheet}/lembar) · Jarak {geo.gapXmm}×{geo.gapYmm}mm · Margin {geo.originX.toFixed(1)}/{geo.originY.toFixed(1)}mm
           </span>
         </div>
 

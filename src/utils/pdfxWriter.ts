@@ -112,11 +112,11 @@ function buildMarksAndBleedContentStream(
   const xs: number[] = [];
   const ys: number[] = [];
   for (let c = 0; c < geo.cols; c++) {
-    const x = offsetX + c * (geo.slotW + geo.gapMm);
+    const x = offsetX + c * (geo.slotW + geo.gapXmm);
     xs.push(+x.toFixed(3), +(x + geo.slotW).toFixed(3));
   }
   for (let r = 0; r < geo.rows; r++) {
-    const y = offsetY + r * (geo.slotH + geo.gapMm);
+    const y = offsetY + r * (geo.slotH + geo.gapYmm);
     ys.push(+y.toFixed(3), +(y + geo.slotH).toFixed(3));
   }
   const ux = [...new Set(xs)];
@@ -173,7 +173,7 @@ function buildMarksAndBleedContentStream(
   if (cfg.showFoldMarks) {
     cmds.push('q 0.45 w 0 1 0 0 K [3 2] 0 d');
     for (let r = 0; r < geo.rows; r++) {
-      const slotTop = offsetY + r * (geo.slotH + geo.gapMm);
+      const slotTop = offsetY + r * (geo.slotH + geo.gapYmm);
       const foldY = geo.isFoldable ? slotTop + geo.cardH : slotTop + geo.cardH / 2;
       // Outer wing crease ticks left & right
       const tickLen = Math.min(4.5, Math.max(1.8, offsetX - 0.5));
@@ -182,7 +182,7 @@ function buildMarksAndBleedContentStream(
       if (geo.isFoldable) {
         // Dashed internal center fold crease across full card width
         for (let c = 0; c < geo.cols; c++) {
-          const cx = offsetX + c * (geo.slotW + geo.gapMm);
+          const cx = offsetX + c * (geo.slotW + geo.gapXmm);
           cmds.push(`${px(cx)} ${py(foldY)} m ${px(cx + geo.cardW)} ${py(foldY)} l S`);
         }
       }
@@ -288,7 +288,8 @@ export async function generatePdfX1aDocument(
 
   // Cache Back CMYK XObject per class (dramatically reduces file size & compute!)
   const backCache = new Map<string, CmykXObject>();
-  const cardBleed = Math.min(effectiveCfg.bleedMm, effectiveCfg.gapMm > 0 ? Math.min(effectiveCfg.bleedMm, effectiveCfg.gapMm / 2) : effectiveCfg.bleedMm);
+  const minGap = Math.min(geo.gapXmm, geo.gapYmm);
+  const cardBleed = Math.min(effectiveCfg.bleedMm, minGap > 0 ? Math.min(effectiveCfg.bleedMm, minGap / 2) : effectiveCfg.bleedMm);
   // Individual card render uses cardBleed on outer edges
   const renderOpts = {
     cardW: effectiveCfg.cardW,
@@ -364,8 +365,8 @@ export async function generatePdfX1aDocument(
     pagePlans.push({
       title: 'Tes Kalibrasi BELAKANG (O)',
       side: 'calib-back',
-      offsetX: geo.originX + effectiveCfg.dx,
-      offsetY: geo.originY + effectiveCfg.dy,
+      offsetX: geo.backOriginX + effectiveCfg.dx,
+      offsetY: geo.backOriginY + effectiveCfg.dy,
       placements: [],
       usedNames: [],
     });
@@ -384,8 +385,8 @@ export async function generatePdfX1aDocument(
           const st = chunk[k];
           const col = k % geo.cols;
           const row = Math.floor(k / geo.cols);
-          const xMm = geo.originX + col * (geo.slotW + geo.gapMm);
-          const yTopMm = geo.originY + row * (geo.slotH + geo.gapMm);
+          const xMm = geo.originX + col * (geo.slotW + geo.gapXmm);
+          const yTopMm = geo.originY + row * (geo.slotH + geo.gapYmm);
 
           const frontXo = await makeFrontXObject(st);
           const backXo = await getBackXObject(st.kelas);
@@ -424,8 +425,8 @@ export async function generatePdfX1aDocument(
             const st = chunk[k];
             const col = k % geo.cols;
             const row = Math.floor(k / geo.cols);
-            const xMm = geo.originX + col * (geo.slotW + geo.gapMm);
-            const yMm = geo.originY + row * (geo.slotH + geo.gapMm);
+            const xMm = geo.originX + col * (geo.slotW + geo.gapXmm);
+            const yMm = geo.originY + row * (geo.slotH + geo.gapYmm);
             const xo = await makeFrontXObject(st);
             usedNames.add(xo.name);
             placements.push({ xMm: xMm - cardBleed, yMm: yMm - cardBleed, xo });
@@ -450,8 +451,8 @@ export async function generatePdfX1aDocument(
             let row = Math.floor(k / geo.cols);
             if (effectiveCfg.flipMode === 'long') col = geo.cols - 1 - col;
             else row = geo.rows - 1 - row;
-            const xMm = geo.originX + col * (geo.slotW + geo.gapMm) + effectiveCfg.dx;
-            const yMm = geo.originY + row * (geo.slotH + geo.gapMm) + effectiveCfg.dy;
+            const xMm = geo.backOriginX + col * (geo.slotW + geo.gapXmm) + effectiveCfg.dx;
+            const yMm = geo.backOriginY + row * (geo.slotH + geo.gapYmm) + effectiveCfg.dy;
             const xo = await getBackXObject(st.kelas);
             usedNames.add(xo.name);
             placements.push({ xMm: xMm - cardBleed, yMm: yMm - cardBleed, xo });
@@ -459,8 +460,8 @@ export async function generatePdfX1aDocument(
           pagePlans.push({
             title: `Lembar ${sIdx + 1} BELAKANG`,
             side: 'back',
-            offsetX: geo.originX + effectiveCfg.dx,
-            offsetY: geo.originY + effectiveCfg.dy,
+            offsetX: geo.backOriginX + effectiveCfg.dx,
+            offsetY: geo.backOriginY + effectiveCfg.dy,
             placements,
             usedNames: [...usedNames],
           });
@@ -504,7 +505,7 @@ export async function generatePdfX1aDocument(
       const yBottomPt = pt(geo.paperH - (p.yMm + geo.cardH + cardBleed * 2));
       imgStreamCmds.push('q');
       // Clip to exact slot + edge bleed when gap=0 so neighboring cards don't overlap trim
-      if (effectiveCfg.gapMm === 0 && cardBleed > 0) {
+      if (minGap === 0 && cardBleed > 0) {
         const clipX = pt(p.xMm + cardBleed);
         const clipY = pt(geo.paperH - (p.yMm + cardBleed + geo.cardH));
         // Still allow outer perimeter bleed

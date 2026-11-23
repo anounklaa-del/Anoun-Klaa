@@ -230,8 +230,8 @@ export function evaluateAssetChecklist(
       id: 'front_back_symmetry',
       label: 'Presisi Dimensi & Tata Letak Simetris Depan-Belakang',
       category: 'Geometri',
-      passed: geo.originX >= 2 && geo.originY >= 2,
-      detail: `${cfg.cardW} × ${cfg.cardH} mm identik | Margin simetris kiri/kanan ${geo.originX.toFixed(2)} mm, atas/bawah ${geo.originY.toFixed(2)} mm.`,
+      passed: !geo.overflowsPaper && geo.originX >= 0 && geo.originY >= 0,
+      detail: `${cfg.cardW} × ${cfg.cardH} mm identik | Margin (${cfg.marginMode === 'manual' ? 'Manual' : 'Otomatis'}) Kiri ${geo.originX.toFixed(1)} · Kanan ${geo.marginRightActual.toFixed(1)} · Atas ${geo.originY.toFixed(1)} · Bawah ${geo.marginBottomActual.toFixed(1)} mm | Jarak ${geo.gapXmm}×${geo.gapYmm} mm.`,
     },
     {
       id: 'bleed_3mm',

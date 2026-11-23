@@ -47,7 +47,17 @@ export default function App() {
   const [config, setConfig] = useState<PrepressConfig>(() => {
     try {
       const saved = localStorage.getItem('pas_prepress_v2_cfg');
-      if (saved) return { ...DEFAULT_PREPRESS_CONFIG, ...JSON.parse(saved) };
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<PrepressConfig> & { gapMm?: number };
+        const migratedGap =
+          typeof parsed.gapMm === 'number'
+            ? {
+                gapXmm: parsed.gapXmm ?? parsed.gapMm,
+                gapYmm: parsed.gapYmm ?? parsed.gapMm,
+              }
+            : {};
+        return { ...DEFAULT_PREPRESS_CONFIG, ...parsed, ...migratedGap };
+      }
     } catch {
       // ignore storage failure
     }
@@ -263,10 +273,10 @@ export default function App() {
         <div className="flex flex-1 min-h-0 overflow-hidden">
           {(activeTab === 'studio' || activeTab === 'mockup3d') && (
             <aside className="no-print w-80 shrink-0 bg-white border-r border-[#DCE2EE] overflow-y-auto p-4 space-y-5 text-xs">
-              {/* Section 1: Paper, Trim Size & 3mm Bleed */}
+              {/* Section 1: Paper, Trim Size, Bleed, Manual Margins & Spacing */}
               <div>
                 <h2 className="font-display font-bold text-[11px] uppercase tracking-wider text-[#64748B] mb-2">
-                  Kertas, Dimensi &amp; Bleed
+                  Kertas, Ukuran, Bleed &amp; Jarak
                 </h2>
 
                 <label className="block text-[#44546A] font-medium mb-1">Ukuran Kertas</label>
@@ -308,7 +318,7 @@ export default function App() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-3 gap-2 mb-2">
+                <div className="grid grid-cols-3 gap-2 mb-2.5">
                   <div>
                     <label className="block text-[#44546A] mb-0.5">Lebar mm</label>
                     <input
@@ -330,21 +340,7 @@ export default function App() {
                     />
                   </div>
                   <div>
-                    <label className="block text-[#44546A] mb-0.5">Jarak mm</label>
-                    <input
-                      type="number"
-                      step="0.5"
-                      min="0"
-                      value={config.gapMm}
-                      onChange={(e) => updateConfig({ gapMm: Math.max(0, Number(e.target.value) || 0) })}
-                      className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[#44546A] mb-0.5">Bleed (Standar 3mm)</label>
+                    <label className="block text-[#44546A] mb-0.5">Bleed mm</label>
                     <input
                       type="number"
                       step="0.5"
@@ -355,26 +351,182 @@ export default function App() {
                       className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
                     />
                   </div>
-                  <div>
-                    <label className="block text-[#44546A] mb-0.5">Margin Min. mm</label>
-                    <input
-                      type="number"
-                      step="0.2"
-                      min="0"
-                      value={config.marginMm}
-                      onChange={(e) => updateConfig({ marginMm: Math.max(0, Number(e.target.value) || 0) })}
-                      className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
-                    />
+                </div>
+
+                {/* Manual Card Spacing (Jarak Antar Kartu) */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[#44546A] font-medium">Jarak Antar Kartu Manual (mm)</label>
+                    <div className="flex items-center gap-1">
+                      {[0, 3, 6].map((presetGap) => (
+                        <button
+                          key={presetGap}
+                          type="button"
+                          onClick={() => updateConfig({ gapXmm: presetGap, gapYmm: presetGap })}
+                          className={`px-1.5 py-0.5 font-mono text-[10px] border ${
+                            config.gapXmm === presetGap && config.gapYmm === presetGap
+                              ? 'bg-[#1F3864] text-white border-[#1F3864]'
+                              : 'bg-[#F8FAFC] text-[#44546A] border-[#CBD5E1] hover:bg-[#EEF2FA]'
+                          }`}
+                        >
+                          {presetGap}mm
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] text-[#64748B] mb-0.5">Jarak Kolom / X (mm)</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={config.gapXmm}
+                        onChange={(e) => updateConfig({ gapXmm: Math.max(0, Number(e.target.value) || 0) })}
+                        className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-[#64748B] mb-0.5">Jarak Baris / Y (mm)</label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        value={config.gapYmm}
+                        onChange={(e) => updateConfig({ gapYmm: Math.max(0, Number(e.target.value) || 0) })}
+                        className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="mt-2.5 p-2.5 bg-[#F8FAFC] border border-[#DCE2EE] font-mono text-[11px] text-[#1F3864] tabular-nums">
+                {/* Manual vs Symmetric Auto Paper Margins */}
+                <div className="pt-2 border-t border-[#E2E8F0]">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[#44546A] font-medium">Margin Kertas</label>
+                    <div className="flex border border-[#CBD5E1]">
+                      <button
+                        type="button"
+                        onClick={() => updateConfig({ marginMode: 'auto' })}
+                        className={`px-2 py-0.5 text-[11px] font-medium ${
+                          config.marginMode === 'auto'
+                            ? 'bg-[#1F3864] text-white'
+                            : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                        }`}
+                      >
+                        Otomatis
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          updateConfig({
+                            marginMode: 'manual',
+                            marginLeftMm: +geo.originX.toFixed(2),
+                            marginRightMm: +geo.marginRightActual.toFixed(2),
+                            marginTopMm: +geo.originY.toFixed(2),
+                            marginBottomMm: +geo.marginBottomActual.toFixed(2),
+                          })
+                        }
+                        className={`px-2 py-0.5 text-[11px] font-medium border-l border-[#CBD5E1] ${
+                          config.marginMode === 'manual'
+                            ? 'bg-[#1F3864] text-white'
+                            : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                        }`}
+                      >
+                        Manual
+                      </button>
+                    </div>
+                  </div>
+
+                  {config.marginMode === 'auto' ? (
+                    <div>
+                      <label className="block text-[11px] text-[#64748B] mb-0.5">
+                        Margin Minimum Simetris (mm)
+                      </label>
+                      <input
+                        type="number"
+                        step="0.2"
+                        min="0"
+                        value={config.marginMm}
+                        onChange={(e) => updateConfig({ marginMm: Math.max(0, Number(e.target.value) || 0) })}
+                        className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[11px] text-[#64748B] mb-0.5">Atas (Top) mm</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            value={config.marginTopMm}
+                            onChange={(e) => updateConfig({ marginTopMm: Math.max(0, Number(e.target.value) || 0) })}
+                            className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] text-[#64748B] mb-0.5">Bawah (Bottom) mm</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            value={config.marginBottomMm}
+                            onChange={(e) => updateConfig({ marginBottomMm: Math.max(0, Number(e.target.value) || 0) })}
+                            className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] text-[#64748B] mb-0.5">Kiri (Left) mm</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            value={config.marginLeftMm}
+                            onChange={(e) => updateConfig({ marginLeftMm: Math.max(0, Number(e.target.value) || 0) })}
+                            className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] text-[#64748B] mb-0.5">Kanan (Right) mm</label>
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            value={config.marginRightMm}
+                            onChange={(e) => updateConfig({ marginRightMm: Math.max(0, Number(e.target.value) || 0) })}
+                            className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  className={`mt-2.5 p-2.5 border font-mono text-[11px] tabular-nums ${
+                    geo.overflowsPaper
+                      ? 'bg-[#FEF3C7] border-[#D97706] text-[#92400E]'
+                      : 'bg-[#F8FAFC] border-[#DCE2EE] text-[#1F3864]'
+                  }`}
+                >
                   <div>
                     Grid: <strong>{geo.cols} × {geo.rows} = {geo.cardsPerSheet} kartu/lembar</strong>
                   </div>
-                  <div className="text-[#55637A]">
-                    Margin simetris: {geo.originX.toFixed(2)} mm (X) · {geo.originY.toFixed(2)} mm (Y)
+                  <div className={geo.overflowsPaper ? 'text-[#92400E]' : 'text-[#55637A]'}>
+                    Depan: Kiri {geo.originX.toFixed(1)} · Kanan {geo.marginRightActual.toFixed(1)} · Atas {geo.originY.toFixed(1)} · Bawah {geo.marginBottomActual.toFixed(1)} mm
                   </div>
+                  {config.marginMode === 'manual' && (
+                    <div className="text-[#55637A]">
+                      Mirror Belakang ({config.flipMode}): X {geo.backOriginX.toFixed(1)} · Y {geo.backOriginY.toFixed(1)} mm
+                    </div>
+                  )}
+                  {geo.overflowsPaper && (
+                    <div className="font-semibold mt-1">
+                      Perhatian: Kartu melebihi batas ukuran kertas. Kurangi margin atau jarak.
+                    </div>
+                  )}
                 </div>
               </div>
 

@@ -386,11 +386,11 @@ export function PrepressMarksLayer({
   const xs: number[] = [];
   const ys: number[] = [];
   for (let c = 0; c < geo.cols; c++) {
-    const x = offsetX + c * (geo.slotW + geo.gapMm);
+    const x = offsetX + c * (geo.slotW + geo.gapXmm);
     xs.push(+x.toFixed(3), +(x + geo.slotW).toFixed(3));
   }
   for (let r = 0; r < geo.rows; r++) {
-    const y = offsetY + r * (geo.slotH + geo.gapMm);
+    const y = offsetY + r * (geo.slotH + geo.gapYmm);
     ys.push(+y.toFixed(3), +(y + geo.slotH).toFixed(3));
   }
   const ux = [...new Set(xs)];
@@ -464,7 +464,7 @@ export function PrepressMarksLayer({
 
       {cfg.showFoldMarks &&
         Array.from({ length: geo.rows }).map((_, r) => {
-          const slotTop = offsetY + r * (geo.slotH + geo.gapMm);
+          const slotTop = offsetY + r * (geo.slotH + geo.gapYmm);
           const foldY = geo.isFoldable ? slotTop + geo.cardH : slotTop + geo.cardH / 2;
           return (
             <React.Fragment key={`fold-${r}`}>
@@ -656,8 +656,8 @@ export const SheetPagesBlock: React.FC<{
           <PrepressMarksLayer
             geo={geo}
             cfg={config}
-            offsetX={geo.originX + config.dx}
-            offsetY={geo.originY + config.dy}
+            offsetX={geo.backOriginX + config.dx}
+            offsetY={geo.backOriginY + config.dy}
             calibMode={2}
           />
         </section>
@@ -698,8 +698,8 @@ export const SheetPagesBlock: React.FC<{
               {sheetChunk.map((st, idx) => {
                 const col = idx % geo.cols;
                 const row = Math.floor(idx / geo.cols);
-                const x = geo.originX + col * (geo.slotW + geo.gapMm);
-                const y = geo.originY + row * (geo.slotH + geo.gapMm);
+                const x = geo.originX + col * (geo.slotW + geo.gapXmm);
+                const y = geo.originY + row * (geo.slotH + geo.gapYmm);
                 return (
                   <React.Fragment key={st.no}>
                     <BackCardMarkup
@@ -746,8 +746,8 @@ export const SheetPagesBlock: React.FC<{
                 {sheetChunk.map((st, idx) => {
                   const col = idx % geo.cols;
                   const row = Math.floor(idx / geo.cols);
-                  const x = geo.originX + col * (geo.slotW + geo.gapMm);
-                  const y = geo.originY + row * (geo.slotH + geo.gapMm);
+                  const x = geo.originX + col * (geo.slotW + geo.gapXmm);
+                  const y = geo.originY + row * (geo.slotH + geo.gapYmm);
                   return (
                     <React.Fragment key={`f-${st.no}`}>
                       <FrontCardMarkup
@@ -788,8 +788,8 @@ export const SheetPagesBlock: React.FC<{
                   <PrepressMarksLayer
                     geo={geo}
                     cfg={config}
-                    offsetX={geo.originX + config.dx}
-                    offsetY={geo.originY + config.dy}
+                    offsetX={geo.backOriginX + config.dx}
+                    offsetY={geo.backOriginY + config.dy}
                   />
                 )}
                 {sheetChunk.map((st, idx) => {
@@ -797,8 +797,8 @@ export const SheetPagesBlock: React.FC<{
                   let row = Math.floor(idx / geo.cols);
                   if (config.flipMode === 'long') col = geo.cols - 1 - col;
                   else row = geo.rows - 1 - row;
-                  const x = geo.originX + col * (geo.slotW + geo.gapMm) + config.dx;
-                  const y = geo.originY + row * (geo.slotH + geo.gapMm) + config.dy;
+                  const x = geo.backOriginX + col * (geo.slotW + geo.gapXmm) + config.dx;
+                  const y = geo.backOriginY + row * (geo.slotH + geo.gapYmm) + config.dy;
                   return (
                     <BackCardMarkup
                       key={`b-${st.no}`}
