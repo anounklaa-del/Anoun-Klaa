@@ -620,11 +620,11 @@ function SeatingPageMarkup({
         }}
       >
         {showSchoolHeader ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '2.5mm', minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '3.2mm', minWidth: 0 }}>
             <img
               src={LOGO_RIGHT_DATA_URI}
               alt="Lambang Sekolah SMAN 1 Alalak"
-              style={{ height: '11mm', width: 'auto', objectFit: 'contain', flexShrink: 0 }}
+              style={{ height: '15mm', width: 'auto', objectFit: 'contain', flexShrink: 0 }}
             />
             <div style={{ minWidth: 0, lineHeight: 1.2 }}>
               <div

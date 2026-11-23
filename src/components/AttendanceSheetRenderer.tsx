@@ -55,80 +55,123 @@ function AttendancePageMarkup({
       {showSchoolHeader ? (
         <div
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '3mm',
-            paddingBottom: isUltraDense ? '1.0mm' : '1.8mm',
-            borderBottom: '0.7mm solid #1F3864',
-            boxShadow: '0 0.5mm 0 0 #FFFFFF, 0 0.9mm 0 0 #C9A227',
-            marginBottom: isUltraDense ? '0.3mm' : '0.6mm',
+            marginBottom: isUltraDense ? '0.4mm' : '0.8mm',
             flexShrink: 0,
           }}
         >
-          <img
-            src={LOGO_LEFT_DATA_URI}
-            alt="Logo Pemprov Kalimantan Selatan"
+          <div
             style={{
-              height: isUltraDense ? '9.5mm' : '13mm',
-              width: 'auto',
-              objectFit: 'contain',
-              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '3.5mm',
+              paddingBottom: isUltraDense ? '1.2mm' : '2.0mm',
+              borderBottom: '0.85mm solid #1F3864',
             }}
-          />
-          <div style={{ textAlign: 'center', flex: 1, minWidth: 0, lineHeight: isUltraDense ? 1.12 : 1.18 }}>
+          >
             <div
               style={{
-                fontSize: isUltraDense ? '6.4pt' : '7.5pt',
-                fontWeight: 700,
-                color: '#334155',
-                letterSpacing: '0.2mm',
+                width: isUltraDense ? '19mm' : '24mm',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
               }}
             >
-              PEMERINTAH PROVINSI KALIMANTAN SELATAN · DINAS PENDIDIKAN DAN KEBUDAYAAN
+              <img
+                src={LOGO_LEFT_DATA_URI}
+                alt="Logo Pemprov Kalimantan Selatan"
+                style={{
+                  height: isUltraDense ? '15.5mm' : '20.5mm',
+                  width: 'auto',
+                  maxWidth: '100%',
+                  objectFit: 'contain',
+                }}
+              />
             </div>
             <div
               style={{
-                fontSize: isUltraDense ? '10.2pt' : '12pt',
-                fontWeight: 800,
-                color: '#1F3864',
-                marginTop: '0.15mm',
+                textAlign: 'center',
+                flex: 1,
+                minWidth: 0,
+                lineHeight: isUltraDense ? 1.14 : 1.2,
               }}
             >
-              SMA NEGERI 1 ALALAK
+              <div
+                style={{
+                  fontSize: isUltraDense ? '6.6pt' : '8.2pt',
+                  fontWeight: 700,
+                  color: '#334155',
+                  letterSpacing: '0.25mm',
+                }}
+              >
+                PEMERINTAH PROVINSI KALIMANTAN SELATAN
+              </div>
+              <div
+                style={{
+                  fontSize: isUltraDense ? '6.6pt' : '8.2pt',
+                  fontWeight: 700,
+                  color: '#334155',
+                  letterSpacing: '0.25mm',
+                }}
+              >
+                DINAS PENDIDIKAN DAN KEBUDAYAAN
+              </div>
+              <div
+                style={{
+                  fontSize: isUltraDense ? '11.2pt' : '13.8pt',
+                  fontWeight: 800,
+                  color: '#1F3864',
+                  letterSpacing: '0.3mm',
+                  marginTop: isUltraDense ? '0.15mm' : '0.35mm',
+                }}
+              >
+                SMA NEGERI 1 ALALAK
+              </div>
+              <div
+                style={{
+                  fontSize: isUltraDense ? '7.5pt' : '8.8pt',
+                  fontWeight: 800,
+                  color: '#0F172A',
+                  marginTop: isUltraDense ? '0.3mm' : '0.55mm',
+                  letterSpacing: '0.18mm',
+                }}
+              >
+                DAFTAR HADIR PESERTA · {attendanceConfig.examTitle || 'PENILAIAN SUMATIF'}
+              </div>
+              <div
+                style={{
+                  fontSize: isUltraDense ? '6.1pt' : '7.2pt',
+                  fontWeight: 700,
+                  color: '#44546A',
+                  marginTop: '0.15mm',
+                }}
+              >
+                TAHUN AJARAN {attendanceConfig.academicYear || '2026/2027'}
+              </div>
             </div>
             <div
               style={{
-                fontSize: isUltraDense ? '7.5pt' : '8.5pt',
-                fontWeight: 800,
-                color: '#0F172A',
-                marginTop: isUltraDense ? '0.25mm' : '0.5mm',
-                letterSpacing: '0.15mm',
+                width: isUltraDense ? '19mm' : '24mm',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
               }}
             >
-              DAFTAR HADIR PESERTA · {attendanceConfig.examTitle || 'PENILAIAN SUMATIF'}
-            </div>
-            <div
-              style={{
-                fontSize: isUltraDense ? '6pt' : '7pt',
-                fontWeight: 700,
-                color: '#44546A',
-                marginTop: '0.15mm',
-              }}
-            >
-              TAHUN AJARAN {attendanceConfig.academicYear || '2026/2027'}
+              <img
+                src={LOGO_RIGHT_DATA_URI}
+                alt="Lambang Sekolah SMAN 1 Alalak"
+                style={{
+                  height: isUltraDense ? '14.5mm' : '19.5mm',
+                  width: 'auto',
+                  maxWidth: '100%',
+                  objectFit: 'contain',
+                }}
+              />
             </div>
           </div>
-          <img
-            src={LOGO_RIGHT_DATA_URI}
-            alt="Lambang Sekolah SMAN 1 Alalak"
-            style={{
-              height: isUltraDense ? '9.5mm' : '13mm',
-              width: 'auto',
-              objectFit: 'contain',
-              flexShrink: 0,
-            }}
-          />
+          <div style={{ height: '0.55mm', borderBottom: '0.35mm solid #C9A227' }} />
         </div>
       ) : (
         <div
