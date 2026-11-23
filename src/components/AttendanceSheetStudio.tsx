@@ -118,7 +118,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
   return (
     <div className="flex h-full min-h-0 overflow-hidden">
       {/* Left Sidebar Controls */}
-      <aside className="no-print w-80 shrink-0 bg-white border-r border-[#DCE2EE] overflow-y-auto p-4 space-y-5 text-xs">
+      <aside className="no-print w-72 xl:w-[300px] shrink-0 bg-white border-r border-[#DCE2EE] overflow-y-auto p-4 space-y-5 text-xs">
         <div>
           <h2 className="font-display font-bold text-[11px] uppercase tracking-wider text-[#64748B] mb-2">
             Kelompok &amp; Urutan Daftar Hadir

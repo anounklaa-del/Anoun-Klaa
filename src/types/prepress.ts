@@ -14,6 +14,7 @@ export type QrCornerPosition = 'bottom_right' | 'bottom_left' | 'top_right' | 't
 export type QrPayloadFormat = 'full_no' | 'short_no' | 'json';
 
 export type MainWorkspaceTab =
+  | 'dashboard'
   | 'studio'
   | 'sticker'
   | 'seating'

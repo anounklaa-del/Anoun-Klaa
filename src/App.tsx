@@ -2,17 +2,16 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Archive,
   Box,
-  ClipboardCheck,
-  FolderArchive,
+  ChevronRight,
   LayoutGrid,
-  MapPin,
+  Menu,
   Printer,
   QrCode,
-  Tag,
   Upload,
   UserPlus,
-  Users,
 } from 'lucide-react';
+import { AppSidebar, WORKSPACE_META } from './components/AppSidebar';
+import { DashboardOverview } from './components/DashboardOverview';
 import { AttendanceSheetPagesBlock } from './components/AttendanceSheetRenderer';
 import { AttendanceSheetStudio } from './components/AttendanceSheetStudio';
 import { CardSheetPreview } from './components/CardSheetPreview';
@@ -136,8 +135,15 @@ export default function App() {
     }
     return DEFAULT_ATTENDANCE_CONFIG;
   });
-  const [activeTab, setActiveTab] = useState<MainWorkspaceTab>('studio');
-  const [exportSubTab, setExportSubTab] = useState<'archive' | 'docs'>('archive');
+  const [activeTab, setActiveTab] = useState<MainWorkspaceTab>('dashboard');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('pas_sidebar_collapsed_v1') === '1';
+    } catch {
+      return false;
+    }
+  });
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState<boolean>(false);
   const [selectedStudentNo, setSelectedStudentNo] = useState<string>(STUDENTS_MASTER[0].no);
   const [sheetIndex, setSheetIndex] = useState<number>(0);
   const [stickerSheetIndex, setStickerSheetIndex] = useState<number>(0);
@@ -536,14 +542,65 @@ export default function App() {
     }
   };
 
-  const navItems: Array<{ id: MainWorkspaceTab; label: string; icon: React.ReactNode }> = [
-    { id: 'studio', label: 'Kartu PAS', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
-    { id: 'sticker', label: 'Stiker Meja', icon: <Tag className="w-3.5 h-3.5" /> },
-    { id: 'seating', label: 'Denah Ruang', icon: <MapPin className="w-3.5 h-3.5" /> },
-    { id: 'attendance', label: 'Daftar Hadir', icon: <ClipboardCheck className="w-3.5 h-3.5" /> },
-    { id: 'students', label: 'Data Siswa', icon: <Users className="w-3.5 h-3.5" /> },
-    { id: 'export', label: 'Arsip & SOP', icon: <FolderArchive className="w-3.5 h-3.5" /> },
-  ];
+  const toggleSidebarCollapsed = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('pas_sidebar_collapsed_v1', next ? '1' : '0');
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  const handleSelectWorkspaceTab = (tab: MainWorkspaceTab) => {
+    setActiveTab(tab);
+  };
+
+  const handleResetCardFilter = () => {
+    updateConfig({ selectedClass: '', selectedRoom: '', noFrom: '', noTo: '' });
+    setSheetIndex(0);
+  };
+
+  const handleQuickJumpRoom = (
+    room: string,
+    targetTab: 'studio' | 'sticker' | 'seating' | 'attendance',
+  ) => {
+    if (targetTab === 'studio') {
+      updateConfig({ selectedRoom: room, selectedClass: '', noFrom: '', noTo: '' });
+      setSheetIndex(0);
+    } else if (targetTab === 'sticker') {
+      updateStickerConfig({ selectedRoom: room });
+      setStickerSheetIndex(0);
+    } else if (targetTab === 'seating') {
+      updateSeatingConfig({ selectedRoom: room, seatingMode: 'student_card', dataSource: 'room' });
+      setSeatingPageIndex(0);
+    } else if (targetTab === 'attendance') {
+      updateAttendanceConfig({ selectedRoom: room, groupingMode: 'per_ruang' });
+      setAttendancePageIndex(0);
+    }
+    setActiveTab(targetTab);
+  };
+
+  const handleUseScheduleForAttendance = (session: {
+    subject: string;
+    date: string;
+    time: string;
+  }) => {
+    updateAttendanceConfig({
+      subjectName: session.subject,
+      examDate: session.date,
+      examTime: session.time,
+    });
+    setAttendancePageIndex(0);
+    setActiveTab('attendance');
+  };
+
+  const hasActiveCardFilter = Boolean(
+    config.selectedClass || config.selectedRoom || config.noFrom || config.noTo,
+  );
+  const routeMeta = WORKSPACE_META[activeTab];
 
   const activePageW =
     activeTab === 'seating'
@@ -563,96 +620,101 @@ export default function App() {
       {/* Dynamic @page physical dimensions for 1:1mm browser printing */}
       <style>{`@page { size: ${activePageW}mm ${activePageH}mm; margin: 0; }`}</style>
 
-      {/* Interactive Screen Application */}
-      <div className="screen-only flex flex-col h-screen w-screen overflow-hidden bg-[#F3F5F9] text-[#131C31]">
-        {/* Top Bar Contract: Wordmark Left — 5 Nav Links Center — Print & ZIP CTA Right */}
-        <header className="no-print h-14 px-5 bg-white border-b border-[#DCE2EE] flex items-center justify-between gap-6 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-7 h-7 bg-[#1F3864] flex items-center justify-center text-[#C9A227] font-display font-extrabold text-sm shrink-0">
-              S1
+      {/* Interactive Screen Application: Grouped Collapsible Sidebar + Top Breadcrumb Header + Workspace */}
+      <div className="screen-only flex h-screen w-screen overflow-hidden bg-[#F4F6FA] text-[#131C31]">
+        <AppSidebar
+          activeTab={activeTab}
+          collapsed={sidebarCollapsed}
+          mobileOpen={mobileSidebarOpen}
+          onSelectTab={handleSelectWorkspaceTab}
+          onToggleCollapsed={toggleSidebarCollapsed}
+          onCloseMobile={() => setMobileSidebarOpen(false)}
+          counts={{
+            totalStudents: students.length,
+            filteredStudents: filteredStudents.length,
+            stickers: filteredStickers.length,
+            seatingPages: seatingPages.length,
+            attendancePages: attendancePages.length,
+          }}
+          paper={config.paper}
+          dpi={config.dpi}
+          hasActiveCardFilter={hasActiveCardFilter}
+          cardFilterDesc={cardFilterDesc}
+          onResetCardFilter={handleResetCardFilter}
+        />
+
+        <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+          {/* Top Bar Contract: Mobile Toggle + Breadcrumb Trail Left — Primary Actions Right */}
+          <header className="no-print h-14 px-4 lg:px-6 bg-white border-b border-[#DCE2EE] flex items-center justify-between gap-6 shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                type="button"
+                onClick={() => setMobileSidebarOpen(true)}
+                aria-label="Buka menu navigasi"
+                className="lg:hidden p-1.5 border border-[#DCE2EE] text-[#1F3864] hover:bg-[#F3F5F9] shrink-0"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+
+              <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs min-w-0">
+                <span className="text-[#64748B] font-medium whitespace-nowrap hidden sm:inline">
+                  {routeMeta.groupLabel}
+                </span>
+                <ChevronRight className="w-3.5 h-3.5 text-[#94A3B8] shrink-0 hidden sm:inline" />
+                <span className="font-display font-bold text-sm text-[#131C31] truncate whitespace-nowrap">
+                  {routeMeta.label}
+                </span>
+              </nav>
             </div>
-            <div className="min-w-0">
-              <h1 className="font-display font-bold text-sm text-[#1F3864] truncate whitespace-nowrap">
-                SMAN 1 ALALAK · Studio Kartu PAS
-              </h1>
-              <p className="font-mono text-[11px] text-[#64748B] truncate tabular-nums">
-                Paste Nov 2026 · {students.length} Siswa · {config.dpi} DPI CMYK
-              </p>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() =>
+                  activeTab === 'sticker'
+                    ? handleStickerPrint()
+                    : activeTab === 'seating'
+                      ? handleSeatingPrint()
+                      : activeTab === 'attendance'
+                        ? handleAttendancePrint()
+                        : handleDirectPrint()
+                }
+                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#C9A227] hover:bg-[#B58F1E] text-[#0F172A] text-xs font-bold whitespace-nowrap shrink-0 transition-colors"
+                title={
+                  activeTab === 'sticker'
+                    ? `Cetak langsung ${totalPrintPages} halaman Stiker Meja`
+                    : activeTab === 'seating'
+                      ? `Cetak langsung ${totalPrintPages} halaman Denah Tempat Duduk`
+                      : activeTab === 'attendance'
+                        ? `Cetak langsung ${totalPrintPages} halaman Daftar Hadir Peserta`
+                        : `Cetak langsung ${totalCardPrintPages} halaman Kartu PAS`
+                }
+              >
+                <Printer className="w-3.5 h-3.5" />
+                {activeTab === 'sticker'
+                  ? `Cetak Stiker (${totalPrintPages} Hal)`
+                  : activeTab === 'seating'
+                    ? `Cetak Denah (${totalPrintPages} Hal)`
+                    : activeTab === 'attendance'
+                      ? `Cetak Absen (${totalPrintPages} Hal)`
+                      : `Cetak Kartu (${totalCardPrintPages} Hal)`}
+              </button>
+              <button
+                type="button"
+                disabled={zipBusy}
+                onClick={handleQuickArchiveDownload}
+                className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-[#1F3864] hover:bg-[#16294B] disabled:opacity-60 text-white text-xs font-semibold whitespace-nowrap shrink-0 transition-colors"
+              >
+                <Archive className="w-3.5 h-3.5 text-[#C9A227]" />
+                {zipBusy ? 'Mengemas ZIP...' : 'Unduh Arsip ZIP'}
+              </button>
             </div>
-          </div>
+          </header>
 
-          <nav className="flex items-center gap-1 overflow-x-auto">
-            {navItems.map((item) => {
-              const active =
-                activeTab === item.id ||
-                (item.id === 'studio' && activeTab === 'mockup3d') ||
-                (item.id === 'export' && activeTab === 'docs');
-              return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold border whitespace-nowrap shrink-0 transition-colors ${
-                    active
-                      ? 'bg-[#1F3864] text-white border-[#1F3864]'
-                      : 'bg-white text-[#44546A] border-transparent hover:bg-[#F3F5F9] hover:text-[#1F3864]'
-                  }`}
-                >
-                  {item.icon}
-                  {item.label}
-                </button>
-              );
-            })}
-          </nav>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() =>
-                activeTab === 'sticker'
-                  ? handleStickerPrint()
-                  : activeTab === 'seating'
-                    ? handleSeatingPrint()
-                    : activeTab === 'attendance'
-                      ? handleAttendancePrint()
-                      : handleDirectPrint()
-              }
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#C9A227] hover:bg-[#B58F1E] text-[#0F172A] text-xs font-bold whitespace-nowrap shrink-0"
-              title={
-                activeTab === 'sticker'
-                  ? `Cetak langsung ${totalPrintPages} halaman Stiker Meja`
-                  : activeTab === 'seating'
-                    ? `Cetak langsung ${totalPrintPages} halaman Denah Tempat Duduk`
-                    : activeTab === 'attendance'
-                      ? `Cetak langsung ${totalPrintPages} halaman Daftar Hadir Peserta`
-                      : `Cetak langsung ${totalPrintPages} halaman Kartu PAS`
-              }
-            >
-              <Printer className="w-3.5 h-3.5" />
-              {activeTab === 'sticker'
-                ? `Cetak Stiker (${totalPrintPages} Hal)`
-                : activeTab === 'seating'
-                  ? `Cetak Denah (${totalPrintPages} Hal)`
-                  : activeTab === 'attendance'
-                    ? `Cetak Absen (${totalPrintPages} Hal)`
-                    : `Cetak (${totalPrintPages} Hal)`}
-            </button>
-            <button
-              type="button"
-              disabled={zipBusy}
-              onClick={handleQuickArchiveDownload}
-              className="flex items-center gap-2 px-3.5 py-2 bg-[#1F3864] hover:bg-[#16294B] disabled:opacity-60 text-white text-xs font-semibold whitespace-nowrap shrink-0"
-            >
-              <Archive className="w-3.5 h-3.5 text-[#C9A227]" />
-              {zipBusy ? 'Mengemas ZIP...' : 'Unduh Arsip ZIP'}
-            </button>
-          </div>
-        </header>
-
-        {/* Main Split Workspace */}
-        <div className="flex flex-1 min-h-0 overflow-hidden">
-          {(activeTab === 'studio' || activeTab === 'mockup3d') && (
-            <aside className="no-print w-80 shrink-0 bg-white border-r border-[#DCE2EE] overflow-y-auto p-4 space-y-5 text-xs">
+          {/* Main Split Workspace */}
+          <div className="flex flex-1 min-h-0 overflow-hidden">
+            {(activeTab === 'studio' || activeTab === 'mockup3d') && (
+              <aside className="no-print w-72 xl:w-[300px] shrink-0 bg-white border-r border-[#DCE2EE] overflow-y-auto p-4 space-y-5 text-xs">
               {/* Section 1: Paper, Trim Size, Bleed, Manual Margins & Spacing */}
               <div>
                 <h2 className="font-display font-bold text-[11px] uppercase tracking-wider text-[#64748B] mb-2">
@@ -1286,8 +1348,31 @@ export default function App() {
             </aside>
           )}
 
-          <main className="flex-1 min-w-0 h-full overflow-hidden">
-            {(activeTab === 'studio' || activeTab === 'mockup3d') && (
+            <main className="flex-1 min-w-0 h-full overflow-hidden">
+              {activeTab === 'dashboard' && (
+                <DashboardOverview
+                  students={students}
+                  filteredStudents={filteredStudents}
+                  config={config}
+                  stickerConfig={stickerConfig}
+                  seatingConfig={seatingConfig}
+                  attendanceConfig={attendanceConfig}
+                  stats={{
+                    cardsPerSheet: geo.cardsPerSheet,
+                    cardSheets: totalSheets,
+                    stickerCount: filteredStickers.length,
+                    stickerSheets: totalStickerSheets,
+                    seatingPages: seatingPages.length,
+                    attendancePages: attendancePages.length,
+                    missingScheduleCount,
+                  }}
+                  onNavigateTab={handleSelectWorkspaceTab}
+                  onQuickJumpRoom={handleQuickJumpRoom}
+                  onUseScheduleForAttendance={handleUseScheduleForAttendance}
+                  onPrintCards={() => handleDirectPrint()}
+                />
+              )}
+              {(activeTab === 'studio' || activeTab === 'mockup3d') && (
               <div className="flex flex-col h-full overflow-hidden">
                 <div className="no-print bg-white border-b border-[#DCE2EE] px-4 py-1.5 flex items-center justify-between gap-3 shrink-0">
                   <div className="flex items-center gap-1.5">
@@ -1410,12 +1495,9 @@ export default function App() {
                 <div className="bg-white border-b border-[#DCE2EE] px-6 py-2 flex items-center gap-2 shrink-0">
                   <button
                     type="button"
-                    onClick={() => {
-                      setExportSubTab('archive');
-                      setActiveTab('export');
-                    }}
+                    onClick={() => setActiveTab('export')}
                     className={`px-3 py-1.5 text-xs font-semibold border whitespace-nowrap ${
-                      activeTab === 'export' && exportSubTab === 'archive'
+                      activeTab === 'export'
                         ? 'bg-[#1F3864] text-white border-[#1F3864]'
                         : 'bg-white text-[#44546A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
                     }`}
@@ -1424,12 +1506,9 @@ export default function App() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      setExportSubTab('docs');
-                      setActiveTab('export');
-                    }}
+                    onClick={() => setActiveTab('docs')}
                     className={`px-3 py-1.5 text-xs font-semibold border whitespace-nowrap ${
-                      activeTab === 'docs' || (activeTab === 'export' && exportSubTab === 'docs')
+                      activeTab === 'docs'
                         ? 'bg-[#1F3864] text-white border-[#1F3864]'
                         : 'bg-white text-[#44546A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
                     }`}
@@ -1438,7 +1517,7 @@ export default function App() {
                   </button>
                 </div>
                 <div className="flex-1 min-h-0 overflow-hidden">
-                  {activeTab === 'docs' || exportSubTab === 'docs' ? (
+                  {activeTab === 'docs' ? (
                     <ProductionDocsPanel filteredStudents={filteredStudents} config={config} />
                   ) : (
                     <ExportArchivePanel
@@ -1453,7 +1532,8 @@ export default function App() {
                 </div>
               </div>
             )}
-          </main>
+            </main>
+          </div>
         </div>
       </div>
 
