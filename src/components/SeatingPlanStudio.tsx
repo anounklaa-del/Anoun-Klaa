@@ -123,14 +123,14 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
           </h2>
 
           <label className="block text-[#44546A] font-medium mb-1">Model Penempatan Kursi</label>
-          <div className="grid grid-cols-3 border border-[#CBD5E1] mb-2.5">
+          <div className="grid grid-cols-3 p-1 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-1 mb-2.5">
             {(
               [
                 ['student_card', 'Per Ruang'],
                 ['per_kelas', 'Per Kelas'],
                 ['desk_combined', 'Meja Stiker'],
               ] as Array<[SeatingMode, string]>
-            ).map(([val, label], i) => (
+            ).map(([val, label]) => (
               <button
                 key={val}
                 type="button"
@@ -156,12 +156,10 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                   }
                   onPageIndexChange(0);
                 }}
-                className={`py-1.5 px-1 text-[11px] font-semibold whitespace-nowrap ${
-                  i > 0 ? 'border-l border-[#CBD5E1]' : ''
-                } ${
+                className={`py-1.5 px-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all duration-150 ${
                   seatingConfig.seatingMode === val
-                    ? 'bg-[#1F3864] text-white'
-                    : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                    ? 'bg-[#1F3864] text-white shadow-2xs'
+                    : 'text-[#475569] hover:text-[#131C31] hover:bg-white/70'
                 }`}
               >
                 {label}
@@ -170,13 +168,13 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
           </div>
 
           <label className="block text-[#44546A] font-medium mb-1">Sumber Data Peserta</label>
-          <div className="grid grid-cols-2 border border-[#CBD5E1] mb-2.5">
+          <div className="grid grid-cols-2 p-1 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-1 mb-2.5">
             {(
               [
                 ['room', 'Per Ruang Ujian'],
                 ['card_filter', `Filter Kartu (${filteredCardStudents.length})`],
               ] as Array<[SeatingDataSource, string]>
-            ).map(([val, label], i) => (
+            ).map(([val, label]) => (
               <button
                 key={val}
                 type="button"
@@ -184,12 +182,10 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                   onSeatingConfigChange({ dataSource: val });
                   onPageIndexChange(0);
                 }}
-                className={`py-1.5 px-1.5 text-[11px] font-semibold whitespace-nowrap ${
-                  i > 0 ? 'border-l border-[#CBD5E1]' : ''
-                } ${
+                className={`py-1.5 px-1.5 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all duration-150 ${
                   seatingConfig.dataSource === val
-                    ? 'bg-[#1F3864] text-white'
-                    : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                    ? 'bg-[#1F3864] text-white shadow-2xs'
+                    : 'text-[#475569] hover:text-[#131C31] hover:bg-white/70'
                 }`}
               >
                 {label}
@@ -206,7 +202,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                   onSeatingConfigChange({ selectedRoom: e.target.value, selectedClassTier: '' });
                   onPageIndexChange(0);
                 }}
-                className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
               >
                 <option value="">Semua Ruang ({rooms.length} ruang)</option>
                 {rooms.map((r) => (
@@ -217,7 +213,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
               </select>
             </div>
           ) : (
-            <div className="mb-2.5 p-2 bg-[#EEF2FA] border border-[#CBD5E1] text-[11px] text-[#1F3864]">
+            <div className="mb-2.5 p-2.5 rounded-xl bg-[#EEF2FA] border border-[#CBD5E1] text-[11px] text-[#1F3864]">
               <div className="font-semibold">Sinkron Filter Tab Kartu PAS</div>
               <div className="text-[#44546A] font-mono tabular-nums mt-0.5">
                 {cardFilterDesc || 'Semua Siswa'} · {filteredCardStudents.length} kartu
@@ -226,18 +222,18 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
           )}
 
           {isPerKelasMode && (
-            <div className="mb-2.5 space-y-2 p-2 bg-[#F8FAFC] border border-[#DCE2EE]">
+            <div className="mb-2.5 space-y-2 p-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
               <div>
                 <label className="block text-[#44546A] font-medium mb-1">
                   Pengelompokan Denah Per Kelas
                 </label>
-                <div className="grid grid-cols-2 border border-[#CBD5E1]">
+                <div className="grid grid-cols-2 p-0.5 bg-white border border-[#E2E8F0] rounded-lg gap-0.5">
                   {(
                     [
                       ['tier_per_room', 'Jenjang (X / XI / XII)'],
                       ['exact_class_per_room', 'Sub-Kelas (X1..XII 7)'],
                     ] as Array<[SeatingClassGrouping, string]>
-                  ).map(([val, label], i) => (
+                  ).map(([val, label]) => (
                     <button
                       key={val}
                       type="button"
@@ -245,12 +241,10 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                         onSeatingConfigChange({ classGrouping: val, selectedClassTier: '' });
                         onPageIndexChange(0);
                       }}
-                      className={`py-1 px-1 text-[10.5px] font-semibold whitespace-nowrap ${
-                        i > 0 ? 'border-l border-[#CBD5E1]' : ''
-                      } ${
+                      className={`py-1 px-1 rounded-md text-[10.5px] font-semibold whitespace-nowrap transition-colors ${
                         seatingConfig.classGrouping === val
                           ? 'bg-[#1F3864] text-white'
-                          : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                          : 'text-[#475569] hover:bg-[#F1F5F9]'
                       }`}
                     >
                       {label}
@@ -268,7 +262,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                     onSeatingConfigChange({ selectedClassTier: e.target.value });
                     onPageIndexChange(0);
                   }}
-                  className="w-full px-2 py-1 border border-[#CBD5E1] bg-white text-[#131C31]"
+                  className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
                 >
                   <option value="">Semua ({classOptions.length} kelompok)</option>
                   {classOptions.map((c) => (
@@ -292,7 +286,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                   });
                   onPageIndexChange(0);
                 }}
-                className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
               >
                 <option value="desk_order">Sesuai Urutan Meja (MEJA 01 → akhir)</option>
                 <option value="card_order">Sesuai Urutan No. Kartu (001 → akhir)</option>
@@ -301,14 +295,14 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
           )}
 
           <label className="block text-[#44546A] font-medium mb-1">Varian Cetak Denah</label>
-          <div className="grid grid-cols-3 border border-[#CBD5E1]">
+          <div className="grid grid-cols-3 p-1 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-1">
             {(
               [
                 ['kelas', 'Tempel Kelas'],
                 ['panitia', 'Panitia'],
                 ['both', 'Keduanya'],
               ] as Array<[SeatingVariant, string]>
-            ).map(([val, label], i) => (
+            ).map(([val, label]) => (
               <button
                 key={val}
                 type="button"
@@ -316,12 +310,10 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                   onSeatingConfigChange({ variant: val });
                   onPageIndexChange(0);
                 }}
-                className={`py-1.5 px-1 text-[11px] font-semibold whitespace-nowrap ${
-                  i > 0 ? 'border-l border-[#CBD5E1]' : ''
-                } ${
+                className={`py-1.5 px-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all duration-150 ${
                   seatingConfig.variant === val
-                    ? 'bg-[#1F3864] text-white'
-                    : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                    ? 'bg-[#1F3864] text-white shadow-2xs'
+                    : 'text-[#475569] hover:text-[#131C31] hover:bg-white/70'
                 }`}
               >
                 {label}
@@ -340,16 +332,16 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
             <label className="block text-[#44546A] font-medium mb-1">
               Jumlah Banjar / Kolom {isStudentCardMode ? 'Kartu' : 'Meja'}
             </label>
-            <div className={`grid gap-1 ${isStudentCardMode ? 'grid-cols-4' : 'grid-cols-3'}`}>
+            <div className={`grid gap-1.5 ${isStudentCardMode ? 'grid-cols-4' : 'grid-cols-3'}`}>
               {colPresets.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => onSeatingConfigChange({ cols: c })}
-                  className={`py-1 font-mono text-[11px] border ${
+                  className={`py-1.5 rounded-md font-mono text-[11px] border transition-colors ${
                     seatingConfig.cols === c
-                      ? 'bg-[#1F3864] text-white border-[#1F3864]'
-                      : 'bg-[#F8FAFC] text-[#44546A] border-[#CBD5E1] hover:bg-[#EEF2FA]'
+                      ? 'bg-[#1F3864] text-white border-[#1F3864] shadow-2xs'
+                      : 'bg-[#F8FAFC] text-[#44546A] border-[#E2E8F0] hover:bg-[#EEF2FA]'
                   }`}
                 >
                   {c} Kol
@@ -366,7 +358,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                 numberingOrder: e.target.value as SeatingNumberingOrder,
               })
             }
-            className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2.5"
+            className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] mb-2.5"
           >
             <option value="snake_col">Zig-Zag / Ular per Banjar (Depan↔Belakang)</option>
             <option value="col_top">Lurus per Banjar (Depan → Belakang)</option>
@@ -383,7 +375,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                     orientation: e.target.value as SeatingOrientation,
                   })
                 }
-                className="w-full px-2 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
               >
                 <option value="front_top">Di Atas (Standar)</option>
                 <option value="front_bottom">Di Bawah</option>
@@ -396,7 +388,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                 onChange={(e) =>
                   onSeatingConfigChange({ doorSide: e.target.value as SeatingDoorSide })
                 }
-                className="w-full px-2 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
               >
                 <option value="left">Kiri Depan</option>
                 <option value="right">Kanan Depan</option>
@@ -461,23 +453,21 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
 
           <div className="mb-2.5">
             <label className="block text-[#44546A] font-medium mb-1">Orientasi Denah</label>
-            <div className="grid grid-cols-2 border border-[#CBD5E1]">
+            <div className="grid grid-cols-2 p-1 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-1">
               {(
                 [
                   ['portrait', 'Potret (Tegak)'],
                   ['landscape', 'Lanskap (Mendatar)'],
                 ] as const
-              ).map(([val, label], i) => (
+              ).map(([val, label]) => (
                 <button
                   key={val}
                   type="button"
                   onClick={() => onSeatingConfigChange({ paperOrientation: val })}
-                  className={`py-1.5 px-1.5 text-[11px] font-semibold whitespace-nowrap ${
-                    i > 0 ? 'border-l border-[#CBD5E1]' : ''
-                  } ${
+                  className={`py-1.5 px-1.5 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all duration-150 ${
                     seatingConfig.paperOrientation === val
-                      ? 'bg-[#1F3864] text-white'
-                      : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                      ? 'bg-[#1F3864] text-white shadow-2xs'
+                      : 'text-[#475569] hover:text-[#131C31] hover:bg-white/70'
                   }`}
                 >
                   {label}
@@ -492,7 +482,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
               <select
                 value={paperConfig.paper}
                 onChange={(e) => onPaperConfigChange({ paper: e.target.value as PaperPreset })}
-                className="w-full px-2 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
               >
                 {Object.entries(PAPER_DIMENSIONS).map(([k, [, , label]]) => (
                   <option key={k} value={k}>
@@ -513,7 +503,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                 onChange={(e) =>
                   onSeatingConfigChange({ marginMm: Math.max(4, Number(e.target.value) || 8) })
                 }
-                className="w-full px-2 py-1.5 border border-[#CBD5E1] font-mono tabular-nums"
+                className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
               />
             </div>
           </div>
@@ -528,7 +518,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                     showSchoolHeader: seatingConfig.showSchoolHeader === false,
                   })
                 }
-                className={`px-1.5 py-0.5 text-[10px] font-semibold border ${
+                className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border transition-colors ${
                   seatingConfig.showSchoolHeader !== false
                     ? 'border-[#1F3864] bg-[#EEF2FA] text-[#1F3864]'
                     : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#64748B]'
@@ -542,7 +532,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
               disabled={seatingConfig.showSchoolHeader === false}
               value={seatingConfig.examTitle}
               onChange={(e) => onSeatingConfigChange({ examTitle: e.target.value })}
-              className="w-full px-2 py-1 border border-[#CBD5E1] text-[#131C31] disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]"
+              className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] text-[#131C31] disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]"
             />
           </div>
 
@@ -554,11 +544,11 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
               type="text"
               value={seatingConfig.committeeChairName}
               onChange={(e) => onSeatingConfigChange({ committeeChairName: e.target.value })}
-              className="w-full px-2 py-1 border border-[#CBD5E1] text-[#131C31]"
+              className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] text-[#131C31]"
             />
           </div>
 
-          <div className="p-2.5 bg-[#F8FAFC] border border-[#DCE2EE] font-mono text-[11px] tabular-nums text-[#1F3864]">
+          <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] font-mono text-[11px] tabular-nums text-[#1F3864]">
             <div>
               Total Halaman: <strong>{pages.length} halaman</strong> ({roomPlans.length} denah)
             </div>
@@ -573,7 +563,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
           <button
             type="button"
             onClick={() => onPrintSeating('all')}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1F3864] hover:bg-[#16294B] text-white font-bold text-xs"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] text-white font-bold text-xs shadow-xs hover:shadow transition-all duration-150 active:scale-[0.98]"
           >
             <Printer className="w-4 h-4 text-[#C9A227]" />
             Cetak Semua Denah ({pages.length} Hal)
@@ -586,7 +576,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                 `Rekap_Denah_Kursi_Panitia_PAS_SMAN1ALALAK.csv`,
               )
             }
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#1F3864] font-semibold text-xs"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#94A3B8] text-[#1F3864] font-semibold text-xs shadow-2xs transition-all duration-150"
           >
             <Download className="w-3.5 h-3.5" />
             Unduh Rekap Panitia (CSV)
@@ -596,31 +586,31 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
 
       {/* Main Proportional Seating Viewport */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#E9EDF5]">
-        <div className="no-print flex items-center justify-between gap-3 px-4 py-2.5 bg-white border-b border-[#DCE2EE] shrink-0 overflow-x-auto">
+        <div className="no-print flex items-center justify-between gap-3 px-4 py-2.5 bg-white border-b border-[#E2E8F0] shrink-0 overflow-x-auto">
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               disabled={safePageIdx <= 0}
               onClick={() => onPageIndexChange(Math.max(0, safePageIdx - 1))}
-              className="p-1.5 border border-[#DCE2EE] hover:bg-[#F3F5F9] disabled:opacity-40"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] disabled:opacity-40 disabled:pointer-events-none transition-colors"
               title="Halaman sebelumnya"
             >
               <ChevronLeft className="w-4 h-4 text-[#1F3864]" />
             </button>
-            <span className="font-mono text-xs font-semibold text-[#1F3864] tabular-nums whitespace-nowrap">
+            <span className="font-mono text-xs font-semibold text-[#1F3864] tabular-nums whitespace-nowrap px-1">
               HALAMAN {safePageIdx + 1} / {totalPages}
             </span>
             <button
               type="button"
               disabled={safePageIdx >= totalPages - 1}
               onClick={() => onPageIndexChange(Math.min(totalPages - 1, safePageIdx + 1))}
-              className="p-1.5 border border-[#DCE2EE] hover:bg-[#F3F5F9] disabled:opacity-40"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] disabled:opacity-40 disabled:pointer-events-none transition-colors"
               title="Halaman berikutnya"
             >
               <ChevronRight className="w-4 h-4 text-[#1F3864]" />
             </button>
             {activePage && (
-              <span className="text-xs text-[#55637A] font-mono tabular-nums whitespace-nowrap ml-2">
+              <span className="text-xs text-[#55637A] font-mono tabular-nums whitespace-nowrap ml-1.5">
                 {activePage.roomPlan.badgeLabel} ·{' '}
                 {activePage.mode === 'kelas' ? 'Tempel Kelas' : 'Kontrol Panitia'} ·{' '}
                 {isStudentCardMode
@@ -631,23 +621,21 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
-            <div className="flex border border-[#CBD5E1]" title="Orientasi Denah">
+            <div className="inline-flex p-0.5 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-0.5" title="Orientasi Denah">
               {(
                 [
                   ['portrait', 'Potret'],
                   ['landscape', 'Lanskap'],
                 ] as const
-              ).map(([val, label], i) => (
+              ).map(([val, label]) => (
                 <button
                   key={val}
                   type="button"
                   onClick={() => onSeatingConfigChange({ paperOrientation: val })}
-                  className={`px-2 py-1 text-[11px] font-semibold whitespace-nowrap ${
-                    i > 0 ? 'border-l border-[#CBD5E1]' : ''
-                  } ${
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all duration-150 ${
                     seatingConfig.paperOrientation === val
-                      ? 'bg-[#1F3864] text-white'
-                      : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                      ? 'bg-[#1F3864] text-white shadow-2xs'
+                      : 'text-[#475569] hover:text-[#131C31]'
                   }`}
                 >
                   {label}
@@ -663,7 +651,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
                 })
               }
               title="Tampilkan atau sembunyikan header nama sekolah & lambang pada denah"
-              className={`px-2 py-1 border text-[11px] font-semibold whitespace-nowrap ${
+              className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold whitespace-nowrap transition-colors ${
                 seatingConfig.showSchoolHeader !== false
                   ? 'border-[#1F3864] bg-[#EEF2FA] text-[#1F3864]'
                   : 'border-[#CBD5E1] bg-white text-[#64748B] hover:bg-[#F8FAFC]'
@@ -690,7 +678,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
             <button
               type="button"
               onClick={() => onPrintSeating('current')}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#1F3864] text-[#1F3864] hover:bg-[#F3F5F9] text-xs font-semibold whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#1F3864] text-[#1F3864] text-xs font-semibold shadow-2xs whitespace-nowrap shrink-0 transition-all duration-150 active:scale-[0.98]"
             >
               <Printer className="w-3.5 h-3.5" />
               Cetak Hal {safePageIdx + 1}
@@ -698,7 +686,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
             <button
               type="button"
               onClick={() => onPrintSeating('all')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1F3864] text-white text-xs font-semibold hover:bg-[#16294B] whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] text-white text-xs font-semibold shadow-xs hover:shadow whitespace-nowrap shrink-0 transition-all duration-150 active:scale-[0.98]"
             >
               <Printer className="w-3.5 h-3.5 text-[#C9A227]" />
               Cetak Semua ({totalPages})
@@ -708,7 +696,7 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
 
         <div className="flex-1 overflow-auto p-6">
           {!activePage ? (
-            <div className="max-w-md mx-auto mt-16 bg-white border border-[#DCE2EE] p-8 text-center">
+            <div className="max-w-md mx-auto mt-16 bg-white border border-[#E2E8F0] rounded-xl shadow-xs p-8 text-center">
               <p className="font-display font-bold text-[#1F3864] text-base">
                 Tidak ada data ruang ditemukan
               </p>

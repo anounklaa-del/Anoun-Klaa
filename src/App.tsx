@@ -645,13 +645,13 @@ export default function App() {
 
         <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
           {/* Top Bar Contract: Mobile Toggle + Breadcrumb Trail Left — Primary Actions Right */}
-          <header className="no-print h-14 px-4 lg:px-6 bg-white border-b border-[#DCE2EE] flex items-center justify-between gap-6 shrink-0">
+          <header className="no-print h-14 px-4 lg:px-6 bg-white border-b border-[#E2E8F0] flex items-center justify-between gap-6 shrink-0">
             <div className="flex items-center gap-3 min-w-0">
               <button
                 type="button"
                 onClick={() => setMobileSidebarOpen(true)}
                 aria-label="Buka menu navigasi"
-                className="lg:hidden p-1.5 border border-[#DCE2EE] text-[#1F3864] hover:bg-[#F3F5F9] shrink-0"
+                className="lg:hidden p-2 rounded-lg border border-[#E2E8F0] text-[#1F3864] hover:bg-[#F1F5F9] transition-colors shrink-0"
               >
                 <Menu className="w-4 h-4" />
               </button>
@@ -667,7 +667,7 @@ export default function App() {
               </nav>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2.5 shrink-0">
               <button
                 type="button"
                 onClick={() =>
@@ -679,7 +679,7 @@ export default function App() {
                         ? handleAttendancePrint()
                         : handleDirectPrint()
                 }
-                className="flex items-center gap-1.5 px-3.5 py-2 bg-[#C9A227] hover:bg-[#B58F1E] text-[#0F172A] text-xs font-bold whitespace-nowrap shrink-0 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#C9A227] hover:bg-[#B8921D] text-[#0F172A] text-xs font-bold shadow-xs hover:shadow transition-all duration-150 active:scale-[0.98] whitespace-nowrap shrink-0"
                 title={
                   activeTab === 'sticker'
                     ? `Cetak langsung ${totalPrintPages} halaman Stiker Meja`
@@ -703,7 +703,7 @@ export default function App() {
                 type="button"
                 disabled={zipBusy}
                 onClick={handleQuickArchiveDownload}
-                className="hidden sm:flex items-center gap-2 px-3.5 py-2 bg-[#1F3864] hover:bg-[#16294B] disabled:opacity-60 text-white text-xs font-semibold whitespace-nowrap shrink-0 transition-colors"
+                className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] disabled:opacity-60 text-white text-xs font-semibold shadow-xs hover:shadow transition-all duration-150 active:scale-[0.98] whitespace-nowrap shrink-0"
               >
                 <Archive className="w-3.5 h-3.5 text-[#C9A227]" />
                 {zipBusy ? 'Mengemas ZIP...' : 'Unduh Arsip ZIP'}
@@ -725,7 +725,7 @@ export default function App() {
                 <select
                   value={config.paper}
                   onChange={(e) => updateConfig({ paper: e.target.value as PaperPreset })}
-                  className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
                 >
                   {Object.entries(PAPER_DIMENSIONS).map(([k, [, , label]]) => (
                     <option key={k} value={k}>
@@ -744,7 +744,7 @@ export default function App() {
                         step="0.5"
                         value={config.customW}
                         onChange={(e) => updateConfig({ customW: Number(e.target.value) || 210 })}
-                        className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                        className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                       />
                     </div>
                     <div>
@@ -754,7 +754,7 @@ export default function App() {
                         step="0.5"
                         value={config.customH}
                         onChange={(e) => updateConfig({ customH: Number(e.target.value) || 297 })}
-                        className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                        className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                       />
                     </div>
                   </div>
@@ -768,7 +768,7 @@ export default function App() {
                       step="0.1"
                       value={config.cardW}
                       onChange={(e) => updateConfig({ cardW: Math.max(40, Number(e.target.value) || 101.6) })}
-                      className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                      className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                     />
                   </div>
                   <div>
@@ -778,7 +778,7 @@ export default function App() {
                       step="0.1"
                       value={config.cardH}
                       onChange={(e) => updateConfig({ cardH: Math.max(30, Number(e.target.value) || 68.4) })}
-                      className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                      className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                     />
                   </div>
                   <div>
@@ -790,7 +790,7 @@ export default function App() {
                       max="6"
                       value={config.bleedMm}
                       onChange={(e) => updateConfig({ bleedMm: Math.max(0, Number(e.target.value) || 0) })}
-                      className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                      className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                     />
                   </div>
                 </div>
@@ -805,10 +805,10 @@ export default function App() {
                           key={presetGap}
                           type="button"
                           onClick={() => updateConfig({ gapXmm: presetGap, gapYmm: presetGap })}
-                          className={`px-1.5 py-0.5 font-mono text-[10px] border ${
+                          className={`px-2 py-0.5 rounded-md font-mono text-[10px] border transition-colors ${
                             config.gapXmm === presetGap && config.gapYmm === presetGap
                               ? 'bg-[#1F3864] text-white border-[#1F3864]'
-                              : 'bg-[#F8FAFC] text-[#44546A] border-[#CBD5E1] hover:bg-[#EEF2FA]'
+                              : 'bg-[#F8FAFC] text-[#44546A] border-[#E2E8F0] hover:bg-[#EEF2FA]'
                           }`}
                         >
                           {presetGap}mm
@@ -825,7 +825,7 @@ export default function App() {
                         min="0"
                         value={config.gapXmm}
                         onChange={(e) => updateConfig({ gapXmm: Math.max(0, Number(e.target.value) || 0) })}
-                        className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                        className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                       />
                     </div>
                     <div>
@@ -836,7 +836,7 @@ export default function App() {
                         min="0"
                         value={config.gapYmm}
                         onChange={(e) => updateConfig({ gapYmm: Math.max(0, Number(e.target.value) || 0) })}
-                        className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                        className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                       />
                     </div>
                   </div>
@@ -846,14 +846,14 @@ export default function App() {
                 <div className="pt-2 border-t border-[#E2E8F0]">
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="text-[#44546A] font-medium">Margin Kertas</label>
-                    <div className="flex border border-[#CBD5E1]">
+                    <div className="inline-flex p-0.5 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-0.5">
                       <button
                         type="button"
                         onClick={() => updateConfig({ marginMode: 'auto' })}
-                        className={`px-2 py-0.5 text-[11px] font-medium ${
+                        className={`px-2.5 py-0.5 rounded-md text-[11px] font-medium transition-colors ${
                           config.marginMode === 'auto'
-                            ? 'bg-[#1F3864] text-white'
-                            : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                            ? 'bg-[#1F3864] text-white shadow-2xs'
+                            : 'text-[#475569] hover:text-[#131C31]'
                         }`}
                       >
                         Otomatis
@@ -869,10 +869,10 @@ export default function App() {
                             marginBottomMm: +geo.marginBottomActual.toFixed(2),
                           })
                         }
-                        className={`px-2 py-0.5 text-[11px] font-medium border-l border-[#CBD5E1] ${
+                        className={`px-2.5 py-0.5 rounded-md text-[11px] font-medium transition-colors ${
                           config.marginMode === 'manual'
-                            ? 'bg-[#1F3864] text-white'
-                            : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                            ? 'bg-[#1F3864] text-white shadow-2xs'
+                            : 'text-[#475569] hover:text-[#131C31]'
                         }`}
                       >
                         Manual
@@ -891,7 +891,7 @@ export default function App() {
                         min="0"
                         value={config.marginMm}
                         onChange={(e) => updateConfig({ marginMm: Math.max(0, Number(e.target.value) || 0) })}
-                        className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                        className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                       />
                     </div>
                   ) : (
@@ -905,7 +905,7 @@ export default function App() {
                             min="0"
                             value={config.marginTopMm}
                             onChange={(e) => updateConfig({ marginTopMm: Math.max(0, Number(e.target.value) || 0) })}
-                            className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                            className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                           />
                         </div>
                         <div>
@@ -916,7 +916,7 @@ export default function App() {
                             min="0"
                             value={config.marginBottomMm}
                             onChange={(e) => updateConfig({ marginBottomMm: Math.max(0, Number(e.target.value) || 0) })}
-                            className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                            className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                           />
                         </div>
                         <div>
@@ -927,7 +927,7 @@ export default function App() {
                             min="0"
                             value={config.marginLeftMm}
                             onChange={(e) => updateConfig({ marginLeftMm: Math.max(0, Number(e.target.value) || 0) })}
-                            className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                            className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                           />
                         </div>
                         <div>
@@ -938,7 +938,7 @@ export default function App() {
                             min="0"
                             value={config.marginRightMm}
                             onChange={(e) => updateConfig({ marginRightMm: Math.max(0, Number(e.target.value) || 0) })}
-                            className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                            className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                           />
                         </div>
                       </div>
@@ -947,10 +947,10 @@ export default function App() {
                 </div>
 
                 <div
-                  className={`mt-2.5 p-2.5 border font-mono text-[11px] tabular-nums ${
+                  className={`mt-2.5 p-3 rounded-xl border font-mono text-[11px] tabular-nums ${
                     geo.overflowsPaper
                       ? 'bg-[#FEF3C7] border-[#D97706] text-[#92400E]'
-                      : 'bg-[#F8FAFC] border-[#DCE2EE] text-[#1F3864]'
+                      : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#1F3864]'
                   }`}
                 >
                   <div>
@@ -982,7 +982,7 @@ export default function App() {
                 <select
                   value={config.imposition}
                   onChange={(e) => updateConfig({ imposition: e.target.value as ImpositionMode })}
-                  className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2.5"
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] mb-2.5"
                 >
                   <option value="duplex">Duplex Bolak-Balik Simetris (Depan-Belakang)</option>
                   <option value="foldable">Lipat &amp; Tempel Presisi (1 Sisi + Garis Lipat)</option>
@@ -995,7 +995,7 @@ export default function App() {
                 <select
                   value={config.cropStyle}
                   onChange={(e) => updateConfig({ cropStyle: e.target.value as CropMarkStyle })}
-                  className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
                 >
                   <option value="full">Garis Tipis Penuh + Crop Marks Tepi</option>
                   <option value="crop">Sudut Crop Marks + Tanda Silang</option>
@@ -1016,7 +1016,7 @@ export default function App() {
                 <select
                   value={config.flipMode}
                   onChange={(e) => updateConfig({ flipMode: e.target.value as FlipMode })}
-                  className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
                 >
                   <option value="long">Balik Sisi Panjang (Long-edge) — Umum</option>
                   <option value="short">Balik Sisi Pendek (Short-edge)</option>
@@ -1030,7 +1030,7 @@ export default function App() {
                       step="0.1"
                       value={config.dx}
                       onChange={(e) => updateConfig({ dx: Number(e.target.value) || 0 })}
-                      className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                      className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                     />
                   </div>
                   <div>
@@ -1040,7 +1040,7 @@ export default function App() {
                       step="0.1"
                       value={config.dy}
                       onChange={(e) => updateConfig({ dy: Number(e.target.value) || 0 })}
-                      className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                      className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                     />
                   </div>
                 </div>
@@ -1071,7 +1071,7 @@ export default function App() {
                     updateConfig({ selectedClass: e.target.value });
                     setSheetIndex(0);
                   }}
-                  className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
                 >
                   <option value="">Semua Kelas ({students.length} siswa)</option>
                   {classList.map((k) => (
@@ -1088,7 +1088,7 @@ export default function App() {
                     updateConfig({ selectedRoom: e.target.value });
                     setSheetIndex(0);
                   }}
-                  className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
                 >
                   <option value="">Semua Ruang ({roomList.length} ruang)</option>
                   {roomList.map((r) => (
@@ -1109,7 +1109,7 @@ export default function App() {
                         updateConfig({ noFrom: e.target.value });
                         setSheetIndex(0);
                       }}
-                      className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                      className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                     />
                   </div>
                   <div>
@@ -1122,7 +1122,7 @@ export default function App() {
                         updateConfig({ noTo: e.target.value });
                         setSheetIndex(0);
                       }}
-                      className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
+                      className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                     />
                   </div>
                 </div>
@@ -1133,7 +1133,7 @@ export default function App() {
                 <select
                   value={selectedStudent.no}
                   onChange={(e) => setSelectedStudentNo(e.target.value)}
-                  className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2.5"
+                  className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] mb-2.5"
                 >
                   {filteredStudents.slice(0, 120).map((s) => (
                     <option key={s.no} value={s.no}>
@@ -1161,13 +1161,13 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('students')}
-                  className="flex items-center justify-center gap-2 w-full px-3 py-2 mb-2 bg-[#EEF2FA] hover:bg-[#E2E8F0] border border-[#CBD5E1] text-[#1F3864] font-semibold"
+                  className="flex items-center justify-center gap-2 w-full px-3 py-2 mb-2 rounded-lg bg-[#EEF2FA] hover:bg-[#E2E8F0] border border-[#CBD5E1] text-[#1F3864] font-semibold transition-colors"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   Tambah / Kelola Data Manual
                 </button>
 
-                <label className="flex items-center justify-center gap-2 w-full px-3 py-2 border border-dashed border-[#94A3B8] hover:border-[#1F3864] hover:bg-[#F8FAFC] text-[#1F3864] font-medium cursor-pointer">
+                <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-[#94A3B8] hover:border-[#1F3864] hover:bg-[#F8FAFC] text-[#1F3864] font-medium cursor-pointer transition-colors">
                   <Upload className="w-3.5 h-3.5" />
                   Impor CSV Siswa Baru
                   <input
@@ -1216,7 +1216,7 @@ export default function App() {
                         onChange={(e) =>
                           updateConfig({ qrCorner: e.target.value as QrCornerPosition })
                         }
-                        className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                        className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
                       >
                         <option value="bottom_right">Sudut Kanan Bawah (Bawaan)</option>
                         <option value="bottom_left">Sudut Kiri Bawah (+ Info Scan)</option>
@@ -1235,7 +1235,7 @@ export default function App() {
                           onChange={(e) =>
                             updateConfig({ qrFormat: e.target.value as QrPayloadFormat })
                           }
-                          className="w-full px-2 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                          className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
                         >
                           <option value="full_no">No. Peserta Lengkap</option>
                           <option value="short_no">No. Urut Saja</option>
@@ -1257,13 +1257,13 @@ export default function App() {
                               qrSizeMm: Math.max(10.5, Math.min(17.5, Number(e.target.value) || 13.5)),
                             })
                           }
-                          className="w-full px-2 py-1.5 border border-[#CBD5E1] font-mono tabular-nums"
+                          className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
                         />
                       </div>
                     </div>
 
-                    <div className="p-2.5 bg-[#F8FAFC] border border-[#DCE2EE] flex items-center gap-3">
-                      <div className="w-14 h-14 p-1 bg-white border border-[#1F3864] shrink-0">
+                    <div className="p-2.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center gap-3">
+                      <div className="w-14 h-14 p-1 rounded-lg bg-white border border-[#1F3864] shrink-0">
                         <QrCodeSvg
                           student={selectedStudent}
                           format={config.qrFormat}
@@ -1320,7 +1320,7 @@ export default function App() {
                   <select
                     value={printScope}
                     onChange={(e) => setPrintScope(e.target.value as 'all' | 'current')}
-                    className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
                   >
                     <option value="all">
                       Semua Lembar ({totalSheets} lembar · {config.imposition === 'duplex' ? totalSheets * 2 : totalSheets} hal)
@@ -1334,13 +1334,13 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => handleDirectPrint()}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1F3864] hover:bg-[#16294B] text-white font-bold text-xs"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] text-white font-bold text-xs shadow-xs hover:shadow transition-all duration-150 active:scale-[0.98]"
                 >
                   <Printer className="w-4 h-4 text-[#C9A227]" />
                   Cetak Langsung ({totalPrintPages} Halaman)
                 </button>
 
-                <div className="p-2.5 bg-[#EEF2FA] border border-[#DCE2EE] text-[11px] text-[#334155] leading-relaxed">
+                <div className="p-3 rounded-xl bg-[#EEF2FA] border border-[#DCE2EE] text-[11px] text-[#334155] leading-relaxed">
                   <strong className="text-[#1F3864]">Saat dialog cetak:</strong> pilih skala{' '}
                   <strong>100% / Actual size</strong>, margin <strong>None</strong>, matikan header &amp; footer, ukuran kertas sama ({config.paper}), aktifkan <strong>Duplex ({config.flipMode === 'long' ? 'Long-edge' : 'Short-edge'})</strong>.
                 </div>
@@ -1374,15 +1374,15 @@ export default function App() {
               )}
               {(activeTab === 'studio' || activeTab === 'mockup3d') && (
               <div className="flex flex-col h-full overflow-hidden">
-                <div className="no-print bg-white border-b border-[#DCE2EE] px-4 py-1.5 flex items-center justify-between gap-3 shrink-0">
-                  <div className="flex items-center gap-1.5">
+                <div className="no-print bg-white border-b border-[#E2E8F0] px-4 py-2 flex items-center justify-between gap-3 shrink-0">
+                  <div className="inline-flex p-0.5 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-0.5">
                     <button
                       type="button"
                       onClick={() => setActiveTab('studio')}
-                      className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold border whitespace-nowrap ${
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-all duration-150 ${
                         activeTab === 'studio'
-                          ? 'bg-[#1F3864] text-white border-[#1F3864]'
-                          : 'bg-white text-[#44546A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
+                          ? 'bg-[#1F3864] text-white shadow-2xs'
+                          : 'text-[#475569] hover:text-[#131C31]'
                       }`}
                     >
                       <LayoutGrid className="w-3.5 h-3.5" />
@@ -1391,10 +1391,10 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setActiveTab('mockup3d')}
-                      className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold border whitespace-nowrap ${
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold whitespace-nowrap transition-all duration-150 ${
                         activeTab === 'mockup3d'
-                          ? 'bg-[#1F3864] text-white border-[#1F3864]'
-                          : 'bg-white text-[#44546A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
+                          ? 'bg-[#1F3864] text-white shadow-2xs'
+                          : 'text-[#475569] hover:text-[#131C31]'
                       }`}
                     >
                       <Box className="w-3.5 h-3.5" />
@@ -1492,29 +1492,31 @@ export default function App() {
             )}
             {(activeTab === 'export' || activeTab === 'docs') && (
               <div className="flex flex-col h-full overflow-hidden">
-                <div className="bg-white border-b border-[#DCE2EE] px-6 py-2 flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('export')}
-                    className={`px-3 py-1.5 text-xs font-semibold border whitespace-nowrap ${
-                      activeTab === 'export'
-                        ? 'bg-[#1F3864] text-white border-[#1F3864]'
-                        : 'bg-white text-[#44546A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
-                    }`}
-                  >
-                    Ekspor PDF/X-1a &amp; Arsip ZIP
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('docs')}
-                    className={`px-3 py-1.5 text-xs font-semibold border whitespace-nowrap ${
-                      activeTab === 'docs'
-                        ? 'bg-[#1F3864] text-white border-[#1F3864]'
-                        : 'bg-white text-[#44546A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
-                    }`}
-                  >
-                    Panduan Produksi &amp; Laporan Efisiensi
-                  </button>
+                <div className="bg-white border-b border-[#E2E8F0] px-6 py-2 flex items-center gap-2 shrink-0">
+                  <div className="inline-flex p-0.5 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('export')}
+                      className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all duration-150 ${
+                        activeTab === 'export'
+                          ? 'bg-[#1F3864] text-white shadow-2xs'
+                          : 'text-[#475569] hover:text-[#131C31]'
+                      }`}
+                    >
+                      Ekspor PDF/X-1a &amp; Arsip ZIP
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('docs')}
+                      className={`px-3 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-all duration-150 ${
+                        activeTab === 'docs'
+                          ? 'bg-[#1F3864] text-white shadow-2xs'
+                          : 'text-[#475569] hover:text-[#131C31]'
+                      }`}
+                    >
+                      Panduan Produksi &amp; Laporan Efisiensi
+                    </button>
+                  </div>
                 </div>
                 <div className="flex-1 min-h-0 overflow-hidden">
                   {activeTab === 'docs' ? (

@@ -125,7 +125,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
           </h2>
 
           <label className="block text-[#44546A] font-medium mb-1">Pengelompokan Lembar</label>
-          <div className="grid grid-cols-2 border border-[#CBD5E1] mb-2.5">
+          <div className="grid grid-cols-2 p-1 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-1 mb-2.5">
             {(
               [
                 ['per_ruang', 'Per Ruang'],
@@ -133,7 +133,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                 ['per_kelas', 'Per Kelas'],
                 ['card_filter', `Filter (${filteredCardStudents.length})`],
               ] as Array<[AttendanceGroupingMode, string]>
-            ).map(([val, label], i) => (
+            ).map(([val, label]) => (
               <button
                 key={val}
                 type="button"
@@ -141,12 +141,10 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                   onAttendanceConfigChange({ groupingMode: val });
                   onPageIndexChange(0);
                 }}
-                className={`py-1.5 px-1.5 text-[11px] font-semibold whitespace-nowrap ${
-                  i % 2 === 1 ? 'border-l border-[#CBD5E1]' : ''
-                } ${i >= 2 ? 'border-t border-[#CBD5E1]' : ''} ${
+                className={`py-1.5 px-1.5 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all duration-150 ${
                   attendanceConfig.groupingMode === val
-                    ? 'bg-[#1F3864] text-white'
-                    : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                    ? 'bg-[#1F3864] text-white shadow-2xs'
+                    : 'text-[#475569] hover:text-[#131C31] hover:bg-white/70'
                 }`}
               >
                 {label}
@@ -164,7 +162,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                   onAttendanceConfigChange({ selectedRoom: e.target.value });
                   onPageIndexChange(0);
                 }}
-                className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
               >
                 <option value="">Semua Ruang ({rooms.length} ruang)</option>
                 {rooms.map((r) => (
@@ -185,7 +183,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                   onAttendanceConfigChange({ selectedClass: e.target.value });
                   onPageIndexChange(0);
                 }}
-                className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
               >
                 <option value="">Semua Kelas ({classes.length} kelas)</option>
                 {classes.map((c) => (
@@ -198,7 +196,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
           )}
 
           {attendanceConfig.groupingMode === 'card_filter' && (
-            <div className="mb-2.5 p-2 bg-[#EEF2FA] border border-[#CBD5E1] text-[11px] text-[#1F3864]">
+            <div className="mb-2.5 p-2.5 rounded-xl bg-[#EEF2FA] border border-[#CBD5E1] text-[11px] text-[#1F3864]">
               <div className="font-semibold">Sinkron Filter Tab Kartu PAS</div>
               <div className="text-[#44546A] font-mono tabular-nums mt-0.5">
                 {cardFilterDesc || 'Semua Siswa'} · {filteredCardStudents.length} peserta
@@ -217,7 +215,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                   });
                   onPageIndexChange(0);
                 }}
-                className="w-full px-2 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
               >
                 <option value="meja_order">Urutan Meja</option>
                 <option value="no_peserta">No. Peserta</option>
@@ -240,7 +238,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                   });
                   onPageIndexChange(0);
                 }}
-                className="w-full px-2 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
               >
                 <option value="fit_group">Sesuai Data Ruang &amp; No (1 Hal)</option>
                 <option value="auto">Auto Kertas ({autoRowsCount} brs/hal)</option>
@@ -284,7 +282,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                   });
                 }
               }}
-              className="w-full px-2 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+              className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
             >
               <option value="">Kosongkan (Isi manual saat ujian)</option>
               {selectedSessionId === '__custom__' && (
@@ -305,7 +303,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                 type="text"
                 value={attendanceConfig.examTitle}
                 onChange={(e) => onAttendanceConfigChange({ examTitle: e.target.value })}
-                className="w-full px-2 py-1 border border-[#CBD5E1] text-[#131C31]"
+                className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] text-[#131C31]"
               />
             </div>
             <div>
@@ -314,7 +312,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                 type="text"
                 value={attendanceConfig.academicYear}
                 onChange={(e) => onAttendanceConfigChange({ academicYear: e.target.value })}
-                className="w-full px-2 py-1 border border-[#CBD5E1] font-mono text-[#131C31]"
+                className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] font-mono text-[#131C31]"
               />
             </div>
           </div>
@@ -328,7 +326,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
               placeholder="Contoh: Bahasa Indonesia"
               value={attendanceConfig.subjectName}
               onChange={(e) => onAttendanceConfigChange({ subjectName: e.target.value })}
-              className="w-full px-2 py-1 border border-[#CBD5E1] text-[#131C31]"
+              className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] text-[#131C31]"
             />
           </div>
 
@@ -340,7 +338,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                 placeholder="Kosong = garis isi"
                 value={attendanceConfig.examDate}
                 onChange={(e) => onAttendanceConfigChange({ examDate: e.target.value })}
-                className="w-full px-2 py-1 border border-[#CBD5E1] text-[#131C31]"
+                className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] text-[#131C31]"
               />
             </div>
             <div>
@@ -350,7 +348,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                 placeholder="08.00 – 09.00"
                 value={attendanceConfig.examTime}
                 onChange={(e) => onAttendanceConfigChange({ examTime: e.target.value })}
-                className="w-full px-2 py-1 border border-[#CBD5E1] text-[#131C31]"
+                className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] text-[#131C31]"
               />
             </div>
           </div>
@@ -364,13 +362,13 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
 
           <div>
             <label className="block text-[#44546A] font-medium mb-1">Orientasi Kertas</label>
-            <div className="grid grid-cols-2 border border-[#CBD5E1]">
+            <div className="grid grid-cols-2 p-1 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-1">
               {(
                 [
                   ['portrait', 'Potret (Tegak)'],
                   ['landscape', 'Lanskap (Mendatar)'],
                 ] as const
-              ).map(([val, label], i) => (
+              ).map(([val, label]) => (
                 <button
                   key={val}
                   type="button"
@@ -378,12 +376,10 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                     onAttendanceConfigChange({ paperOrientation: val });
                     onPageIndexChange(0);
                   }}
-                  className={`py-1.5 px-1.5 text-[11px] font-semibold whitespace-nowrap ${
-                    i > 0 ? 'border-l border-[#CBD5E1]' : ''
-                  } ${
+                  className={`py-1.5 px-1.5 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all duration-150 ${
                     attendanceConfig.paperOrientation === val
-                      ? 'bg-[#1F3864] text-white'
-                      : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                      ? 'bg-[#1F3864] text-white shadow-2xs'
+                      : 'text-[#475569] hover:text-[#131C31] hover:bg-white/70'
                   }`}
                 >
                   {label}
@@ -398,7 +394,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
               <select
                 value={paperConfig.paper}
                 onChange={(e) => onPaperConfigChange({ paper: e.target.value as PaperPreset })}
-                className="w-full px-2 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
               >
                 {Object.entries(PAPER_DIMENSIONS).map(([k, [, , label]]) => (
                   <option key={k} value={k}>
@@ -419,7 +415,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                 onChange={(e) =>
                   onAttendanceConfigChange({ marginMm: Math.max(4, Number(e.target.value) || 10) })
                 }
-                className="w-full px-2 py-1.5 border border-[#CBD5E1] font-mono tabular-nums"
+                className="w-full px-2 py-1.5 rounded-lg border border-[#CBD5E1] font-mono tabular-nums"
               />
             </div>
           </div>
@@ -498,7 +494,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                     type="text"
                     value={attendanceConfig.cityLabel}
                     onChange={(e) => onAttendanceConfigChange({ cityLabel: e.target.value })}
-                    className="w-full px-2 py-1 border border-[#CBD5E1] text-[#131C31]"
+                    className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] text-[#131C31]"
                   />
                 </div>
                 <div>
@@ -510,7 +506,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                     placeholder="Kosong = tanda titik"
                     value={attendanceConfig.proctor1Name}
                     onChange={(e) => onAttendanceConfigChange({ proctor1Name: e.target.value })}
-                    className="w-full px-2 py-1 border border-[#CBD5E1] text-[#131C31]"
+                    className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] text-[#131C31]"
                   />
                 </div>
               </div>
@@ -524,14 +520,14 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                     placeholder="Kosong = tanda titik"
                     value={attendanceConfig.proctor2Name}
                     onChange={(e) => onAttendanceConfigChange({ proctor2Name: e.target.value })}
-                    className="w-full px-2 py-1 border border-[#CBD5E1] text-[#131C31]"
+                    className="w-full px-2 py-1 rounded-lg border border-[#CBD5E1] text-[#131C31]"
                   />
                 </div>
               )}
             </div>
           )}
 
-          <div className="p-2.5 bg-[#F8FAFC] border border-[#DCE2EE] font-mono text-[11px] tabular-nums text-[#1F3864]">
+          <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] font-mono text-[11px] tabular-nums text-[#1F3864]">
             <div>
               Total Cetak: <strong>{pages.length} halaman</strong> ({groups.length} kelompok)
             </div>
@@ -549,7 +545,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
           <button
             type="button"
             onClick={() => onPrintAttendance('all')}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1F3864] hover:bg-[#16294B] text-white font-bold text-xs"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] text-white font-bold text-xs shadow-xs hover:shadow transition-all duration-150 active:scale-[0.98]"
           >
             <Printer className="w-4 h-4 text-[#C9A227]" />
             Cetak Semua Daftar Hadir ({pages.length} Hal)
@@ -562,7 +558,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                 `Daftar_Hadir_Peserta_PAS_SMAN1ALALAK.csv`,
               )
             }
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#1F3864] font-semibold text-xs"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#94A3B8] text-[#1F3864] font-semibold text-xs shadow-2xs transition-all duration-150"
           >
             <Download className="w-3.5 h-3.5" />
             Unduh Daftar Hadir (CSV)
@@ -572,31 +568,31 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
 
       {/* Main Preview Viewport */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#E9EDF5]">
-        <div className="no-print flex items-center justify-between gap-3 px-4 py-2.5 bg-white border-b border-[#DCE2EE] shrink-0 overflow-x-auto">
+        <div className="no-print flex items-center justify-between gap-3 px-4 py-2.5 bg-white border-b border-[#E2E8F0] shrink-0 overflow-x-auto">
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               disabled={safePageIdx <= 0}
               onClick={() => onPageIndexChange(Math.max(0, safePageIdx - 1))}
-              className="p-1.5 border border-[#DCE2EE] hover:bg-[#F3F5F9] disabled:opacity-40"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] disabled:opacity-40 disabled:pointer-events-none transition-colors"
               title="Halaman sebelumnya"
             >
               <ChevronLeft className="w-4 h-4 text-[#1F3864]" />
             </button>
-            <span className="font-mono text-xs font-semibold text-[#1F3864] tabular-nums whitespace-nowrap">
+            <span className="font-mono text-xs font-semibold text-[#1F3864] tabular-nums whitespace-nowrap px-1">
               HALAMAN {safePageIdx + 1} / {totalPages}
             </span>
             <button
               type="button"
               disabled={safePageIdx >= totalPages - 1}
               onClick={() => onPageIndexChange(Math.min(totalPages - 1, safePageIdx + 1))}
-              className="p-1.5 border border-[#DCE2EE] hover:bg-[#F3F5F9] disabled:opacity-40"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] disabled:opacity-40 disabled:pointer-events-none transition-colors"
               title="Halaman berikutnya"
             >
               <ChevronRight className="w-4 h-4 text-[#1F3864]" />
             </button>
             {activePage && (
-              <span className="text-xs text-[#55637A] font-mono tabular-nums whitespace-nowrap ml-2">
+              <span className="text-xs text-[#55637A] font-mono tabular-nums whitespace-nowrap ml-1.5">
                 {activePage.group.badgeLabel} · Bag. {activePage.pageInGroup}/
                 {activePage.totalPagesInGroup} · {activePage.rows.length} baris (No.{' '}
                 {activePage.rows[0]?.rowNumber ?? 0}–
@@ -606,13 +602,13 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
-            <div className="flex border border-[#CBD5E1]" title="Orientasi Kertas">
+            <div className="inline-flex p-0.5 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-0.5" title="Orientasi Kertas">
               {(
                 [
                   ['portrait', 'Potret'],
                   ['landscape', 'Lanskap'],
                 ] as const
-              ).map(([val, label], i) => (
+              ).map(([val, label]) => (
                 <button
                   key={val}
                   type="button"
@@ -620,12 +616,10 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                     onAttendanceConfigChange({ paperOrientation: val });
                     onPageIndexChange(0);
                   }}
-                  className={`px-2 py-1 text-[11px] font-semibold whitespace-nowrap ${
-                    i > 0 ? 'border-l border-[#CBD5E1]' : ''
-                  } ${
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all duration-150 ${
                     attendanceConfig.paperOrientation === val
-                      ? 'bg-[#1F3864] text-white'
-                      : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                      ? 'bg-[#1F3864] text-white shadow-2xs'
+                      : 'text-[#475569] hover:text-[#131C31]'
                   }`}
                 >
                   {label}
@@ -640,7 +634,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
                   showSchoolHeader: attendanceConfig.showSchoolHeader === false,
                 })
               }
-              className={`px-2 py-1 border text-[11px] font-semibold whitespace-nowrap ${
+              className={`px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold whitespace-nowrap transition-colors ${
                 attendanceConfig.showSchoolHeader !== false
                   ? 'border-[#1F3864] bg-[#EEF2FA] text-[#1F3864]'
                   : 'border-[#CBD5E1] bg-white text-[#64748B] hover:bg-[#F8FAFC]'
@@ -669,7 +663,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
             <button
               type="button"
               onClick={() => onPrintAttendance('current')}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#1F3864] text-[#1F3864] hover:bg-[#F3F5F9] text-xs font-semibold whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#1F3864] text-[#1F3864] text-xs font-semibold shadow-2xs whitespace-nowrap shrink-0 transition-all duration-150 active:scale-[0.98]"
             >
               <Printer className="w-3.5 h-3.5" />
               Cetak Hal {safePageIdx + 1}
@@ -677,7 +671,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
             <button
               type="button"
               onClick={() => onPrintAttendance('all')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1F3864] text-white text-xs font-semibold hover:bg-[#16294B] whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] text-white text-xs font-semibold shadow-xs hover:shadow whitespace-nowrap shrink-0 transition-all duration-150 active:scale-[0.98]"
             >
               <Printer className="w-3.5 h-3.5 text-[#C9A227]" />
               Cetak Semua ({totalPages})
@@ -687,7 +681,7 @@ export const AttendanceSheetStudio: React.FC<AttendanceSheetStudioProps> = ({
 
         <div className="flex-1 overflow-auto p-6">
           {!activePage ? (
-            <div className="max-w-md mx-auto mt-16 bg-white border border-[#DCE2EE] p-8 text-center">
+            <div className="max-w-md mx-auto mt-16 bg-white border border-[#E2E8F0] rounded-xl shadow-xs p-8 text-center">
               <p className="font-display font-bold text-[#1F3864] text-base">
                 Tidak ada data peserta ditemukan
               </p>

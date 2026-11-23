@@ -239,7 +239,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     <div className="flex flex-col h-full bg-white text-[#131C31] select-none">
       {/* School Monogram & Brand Header */}
       <div
-        className={`h-14 border-b border-[#DCE2EE] flex items-center shrink-0 ${
+        className={`h-14 border-b border-[#E2E8F0] flex items-center shrink-0 ${
           isCollapsedRail ? 'justify-center px-2' : 'justify-between px-4'
         }`}
       >
@@ -250,9 +250,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             onCloseMobile();
           }}
           title="Kembali ke Dashboard SMAN 1 ALALAK"
-          className="flex items-center gap-2.5 min-w-0 text-left focus-visible:outline-2 focus-visible:outline-[#1F3864]"
+          className="flex items-center gap-2.5 min-w-0 text-left rounded-lg py-1 pr-1 transition-colors hover:opacity-90"
         >
-          <div className="w-8 h-8 bg-[#1F3864] flex items-center justify-center text-[#C9A227] font-display font-extrabold text-sm shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#1F3864] shadow-xs flex items-center justify-center text-[#C9A227] font-display font-extrabold text-sm shrink-0">
             S1
           </div>
           {!isCollapsedRail && (
@@ -273,7 +273,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               type="button"
               onClick={onToggleCollapsed}
               title="Ciutkan menu samping"
-              className="hidden lg:flex items-center justify-center w-7 h-7 text-[#64748B] hover:text-[#1F3864] hover:bg-[#F3F5F9] transition-colors shrink-0"
+              className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg text-[#64748B] hover:text-[#1F3864] hover:bg-[#F1F5F9] transition-all duration-150 shrink-0"
             >
               <PanelLeftClose className="w-4 h-4" />
             </button>
@@ -281,7 +281,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               type="button"
               onClick={onCloseMobile}
               title="Tutup menu"
-              className="lg:hidden flex items-center justify-center w-7 h-7 text-[#64748B] hover:text-[#1F3864] hover:bg-[#F3F5F9] transition-colors shrink-0"
+              className="lg:hidden flex items-center justify-center w-8 h-8 rounded-lg text-[#64748B] hover:text-[#1F3864] hover:bg-[#F1F5F9] transition-all duration-150 shrink-0"
             >
               <X className="w-4 h-4" />
             </button>
@@ -291,12 +291,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 
       {/* Expand rail button when collapsed */}
       {isCollapsedRail && (
-        <div className="hidden lg:flex justify-center py-2 border-b border-[#EEF2F6]">
+        <div className="hidden lg:flex justify-center py-2.5 border-b border-[#EEF2F6]">
           <button
             type="button"
             onClick={onToggleCollapsed}
             title="Bentangkan menu samping"
-            className="flex items-center justify-center w-9 h-8 text-[#44546A] hover:text-[#1F3864] hover:bg-[#F3F5F9] transition-colors"
+            className="flex items-center justify-center w-9 h-9 rounded-lg text-[#44546A] hover:text-[#1F3864] hover:bg-[#F1F5F9] transition-all duration-150"
           >
             <PanelLeftOpen className="w-4 h-4" />
           </button>
@@ -306,7 +306,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       {/* Interactive Grouped Navigation */}
       <nav
         aria-label="Navigasi Utama Studio PAS"
-        className={`flex-1 overflow-y-auto py-3 ${isCollapsedRail ? 'px-2 space-y-3' : 'px-3 space-y-4'}`}
+        className={`flex-1 overflow-y-auto py-3.5 ${isCollapsedRail ? 'px-2 space-y-3' : 'px-3 space-y-4'}`}
       >
         {groups.map((group, groupIndex) => {
           const isOpen = openGroups[group.id] !== false;
@@ -320,7 +320,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   type="button"
                   onClick={() => toggleGroup(group.id)}
                   aria-expanded={isOpen}
-                  className="w-full flex items-center justify-between px-2 py-1 mb-1 text-[11px] font-display font-bold tracking-wider uppercase text-[#64748B] hover:text-[#1F3864] transition-colors"
+                  className="w-full flex items-center justify-between px-2.5 py-1.5 mb-1 rounded-md text-[11px] font-display font-bold tracking-wider uppercase text-[#64748B] hover:text-[#1F3864] hover:bg-[#F8FAFC] transition-colors duration-150"
                 >
                   <span className="truncate">{group.label}</span>
                   <ChevronDown
@@ -334,7 +334,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               )}
 
               {(isOpen || isCollapsedRail) && (
-                <ul className="space-y-0.5">
+                <ul className="space-y-1">
                   {group.items.map((item) => {
                     const isActive = activeTab === item.id;
                     return (
@@ -351,14 +351,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                               : undefined
                           }
                           aria-current={isActive ? 'page' : undefined}
-                          className={`w-full flex items-center transition-colors duration-150 ${
+                          className={`w-full flex items-center rounded-lg transition-all duration-150 ${
                             isCollapsedRail
                               ? 'justify-center h-10 px-0'
-                              : 'justify-between gap-2 px-2.5 py-2'
+                              : 'justify-between gap-2 px-3 py-2'
                           } text-xs font-medium whitespace-nowrap ${
                             isActive
-                              ? 'bg-[#1F3864] text-white font-semibold'
-                              : 'text-[#44546A] hover:bg-[#F3F5F9] hover:text-[#1F3864]'
+                              ? 'bg-[#1F3864] text-white font-semibold shadow-xs'
+                              : 'text-[#44546A] hover:bg-[#F1F5F9] hover:text-[#131C31]'
                           }`}
                         >
                           <span className="flex items-center gap-2.5 min-w-0">
@@ -390,29 +390,31 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 
       {/* Bottom Workspace Specification & Filter Summary */}
       {!isCollapsedRail && (
-        <div className="p-3 border-t border-[#DCE2EE] bg-[#F8FAFC] shrink-0 space-y-2">
-          <div className="flex items-center justify-between text-[11px] font-mono tabular-nums text-[#44546A]">
-            <span>Format Kertas</span>
-            <span className="font-semibold text-[#1F3864]">
-              {paper} · {dpi} DPI
-            </span>
-          </div>
-          <div className="text-[11px] text-[#55637A] leading-snug">
-            <div className="flex items-center justify-between gap-2">
-              <span className="truncate" title={cardFilterDesc}>
-                Filter: <strong className="text-[#1F3864]">{cardFilterDesc}</strong>
+        <div className="p-3 border-t border-[#E2E8F0] shrink-0">
+          <div className="p-3 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] space-y-2">
+            <div className="flex items-center justify-between text-[11px] font-mono tabular-nums text-[#44546A]">
+              <span>Format Kertas</span>
+              <span className="font-semibold text-[#1F3864]">
+                {paper} · {dpi} DPI
               </span>
-              {hasActiveCardFilter && (
-                <button
-                  type="button"
-                  onClick={onResetCardFilter}
-                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#1F3864] hover:underline shrink-0"
-                  title="Reset filter kartu aktif"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  Reset
-                </button>
-              )}
+            </div>
+            <div className="text-[11px] text-[#55637A] leading-snug">
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate" title={cardFilterDesc}>
+                  Filter: <strong className="text-[#1F3864]">{cardFilterDesc}</strong>
+                </span>
+                {hasActiveCardFilter && (
+                  <button
+                    type="button"
+                    onClick={onResetCardFilter}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white border border-[#CBD5E1] hover:bg-[#EEF2FA] text-[10px] font-semibold text-[#1F3864] transition-colors shrink-0"
+                    title="Reset filter kartu aktif"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    Reset
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

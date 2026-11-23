@@ -110,7 +110,7 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
               onStickerConfigChange({ selectedRoom: e.target.value });
               onSheetIndexChange(0);
             }}
-            className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
+            className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] mb-2.5 transition-colors focus:border-[#1F3864]"
           >
             <option value="">Semua Ruang ({rooms.length} ruang)</option>
             {rooms.map((r) => (
@@ -127,14 +127,14 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
               onStickerConfigChange({ groupingMode: e.target.value as StickerGroupingMode });
               onSheetIndexChange(0);
             }}
-            className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
+            className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] mb-2.5 transition-colors focus:border-[#1F3864]"
           >
             <option value="tier_room">Gabung Tingkat X / XI / XII (1 Meja = 3 Siswa)</option>
             <option value="class_room">Gabung Semua Kelas Berbeda per Ruang</option>
           </select>
 
           <label className="block text-[#44546A] font-medium mb-1">Cari Nama / No / Meja</label>
-          <div className="relative mb-2">
+          <div className="relative mb-2.5">
             <Search className="w-3.5 h-3.5 text-[#64748B] absolute left-2.5 top-2" />
             <input
               type="text"
@@ -144,7 +144,7 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
                 onStickerConfigChange({ searchQuery: e.target.value });
                 onSheetIndexChange(0);
               }}
-              className="w-full pl-8 pr-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+              className="w-full pl-8 pr-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] transition-colors focus:border-[#1F3864]"
             />
           </div>
 
@@ -169,7 +169,7 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
           <select
             value={paperConfig.paper}
             onChange={(e) => onPaperConfigChange({ paper: e.target.value as PaperPreset })}
-            className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
+            className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] mb-2.5"
           >
             {Object.entries(PAPER_DIMENSIONS).map(([k, [, , label]]) => (
               <option key={k} value={k}>
@@ -179,11 +179,11 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
             <option value="custom">Kustom (mm)...</option>
           </select>
 
-          <div className="mb-2">
+          <div className="mb-2.5">
             <label className="block text-[#44546A] font-medium mb-1">
               Preset Isi Stiker per Lembar (A4)
             </label>
-            <div className="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-3 gap-1.5">
               {[
                 {
                   label: '10/Hal (96×52)',
@@ -234,10 +234,10 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
                       marginRightMm: p.mr,
                     })
                   }
-                  className={`px-1.5 py-1 font-mono text-[10px] border whitespace-nowrap ${
+                  className={`px-1.5 py-1.5 rounded-md font-mono text-[10px] border transition-colors whitespace-nowrap ${
                     stickerConfig.stickerW === p.w && stickerConfig.stickerH === p.h
-                      ? 'bg-[#1F3864] text-white border-[#1F3864]'
-                      : 'bg-[#F8FAFC] text-[#44546A] border-[#CBD5E1] hover:bg-[#EEF2FA]'
+                      ? 'bg-[#1F3864] text-white border-[#1F3864] shadow-2xs'
+                      : 'bg-[#F8FAFC] text-[#44546A] border-[#E2E8F0] hover:bg-[#EEF2FA]'
                   }`}
                 >
                   {p.label}
@@ -283,10 +283,10 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
                   key={g}
                   type="button"
                   onClick={() => onStickerConfigChange({ gapXmm: g, gapYmm: g })}
-                  className={`px-1.5 py-0.5 font-mono text-[10px] border ${
+                  className={`px-2 py-0.5 rounded-md font-mono text-[10px] border transition-colors ${
                     stickerConfig.gapXmm === g && stickerConfig.gapYmm === g
                       ? 'bg-[#1F3864] text-white border-[#1F3864]'
-                      : 'bg-[#F8FAFC] text-[#44546A] border-[#CBD5E1] hover:bg-[#EEF2FA]'
+                      : 'bg-[#F8FAFC] text-[#44546A] border-[#E2E8F0] hover:bg-[#EEF2FA]'
                   }`}
                 >
                   {g}mm
@@ -391,10 +391,10 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
           </label>
 
           <div
-            className={`p-2.5 border font-mono text-[11px] tabular-nums ${
+            className={`p-3 rounded-xl border font-mono text-[11px] tabular-nums ${
               geo.overflowsPaper
                 ? 'bg-[#FEF3C7] border-[#D97706] text-[#92400E]'
-                : 'bg-[#F8FAFC] border-[#DCE2EE] text-[#1F3864]'
+                : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#1F3864]'
             }`}
           >
             <div>
@@ -421,7 +421,7 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
           <button
             type="button"
             onClick={() => onPrintStickers('all')}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1F3864] hover:bg-[#16294B] text-white font-bold text-xs"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] text-white font-bold text-xs shadow-xs hover:shadow transition-all duration-150 active:scale-[0.98]"
           >
             <Printer className="w-4 h-4 text-[#C9A227]" />
             Cetak Semua Stiker ({totalSheets} Hal)
@@ -437,7 +437,7 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
                 }.csv`,
               )
             }
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#1F3864] font-semibold text-xs"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#94A3B8] text-[#1F3864] font-semibold text-xs shadow-2xs transition-all duration-150"
           >
             <Download className="w-3.5 h-3.5" />
             Unduh Rekap Meja (CSV)
@@ -447,30 +447,30 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
 
       {/* Main Sticker Sheet Preview */}
       <div className="flex-1 flex flex-col min-w-0 bg-[#E9EDF5]">
-        <div className="no-print flex items-center justify-between gap-3 px-4 py-2.5 bg-white border-b border-[#DCE2EE] shrink-0 overflow-x-auto">
+        <div className="no-print flex items-center justify-between gap-3 px-4 py-2.5 bg-white border-b border-[#E2E8F0] shrink-0 overflow-x-auto">
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               disabled={safeSheetIdx <= 0}
               onClick={() => onSheetIndexChange(Math.max(0, safeSheetIdx - 1))}
-              className="p-1.5 border border-[#DCE2EE] hover:bg-[#F3F5F9] disabled:opacity-40"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] disabled:opacity-40 disabled:pointer-events-none transition-colors"
               title="Lembar sebelumnya"
             >
               <ChevronLeft className="w-4 h-4 text-[#1F3864]" />
             </button>
-            <span className="font-mono text-xs font-semibold text-[#1F3864] tabular-nums whitespace-nowrap">
+            <span className="font-mono text-xs font-semibold text-[#1F3864] tabular-nums whitespace-nowrap px-1">
               LEMBAR STIKER {safeSheetIdx + 1} / {totalSheets}
             </span>
             <button
               type="button"
               disabled={safeSheetIdx >= totalSheets - 1}
               onClick={() => onSheetIndexChange(Math.min(totalSheets - 1, safeSheetIdx + 1))}
-              className="p-1.5 border border-[#DCE2EE] hover:bg-[#F3F5F9] disabled:opacity-40"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] disabled:opacity-40 disabled:pointer-events-none transition-colors"
               title="Lembar berikutnya"
             >
               <ChevronRight className="w-4 h-4 text-[#1F3864]" />
             </button>
-            <span className="text-xs text-[#55637A] font-mono tabular-nums whitespace-nowrap ml-2">
+            <span className="text-xs text-[#55637A] font-mono tabular-nums whitespace-nowrap ml-1.5">
               {filteredStickers.length} Meja · {geo.cols}×{geo.rows} ({geo.stickerW}×{geo.stickerH}
               mm)
             </span>
@@ -500,7 +500,7 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
             <button
               type="button"
               onClick={() => onPrintStickers('current')}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#1F3864] text-[#1F3864] hover:bg-[#F3F5F9] text-xs font-semibold whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#1F3864] text-[#1F3864] text-xs font-semibold shadow-2xs whitespace-nowrap shrink-0 transition-all duration-150 active:scale-[0.98]"
             >
               <Printer className="w-3.5 h-3.5" />
               Cetak Lembar {safeSheetIdx + 1}
@@ -508,7 +508,7 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
             <button
               type="button"
               onClick={() => onPrintStickers('all')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1F3864] text-white text-xs font-semibold hover:bg-[#16294B] whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] text-white text-xs font-semibold shadow-xs hover:shadow whitespace-nowrap shrink-0 transition-all duration-150 active:scale-[0.98]"
             >
               <Printer className="w-3.5 h-3.5 text-[#C9A227]" />
               Cetak Semua ({totalSheets})
@@ -518,7 +518,7 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
 
         <div className="flex-1 overflow-auto p-6">
           {filteredStickers.length === 0 ? (
-            <div className="max-w-md mx-auto mt-16 bg-white border border-[#DCE2EE] p-8 text-center">
+            <div className="max-w-md mx-auto mt-16 bg-white border border-[#E2E8F0] rounded-xl shadow-xs p-8 text-center">
               <p className="font-display font-bold text-[#1F3864] text-base">
                 Tidak ada stiker meja sesuai filter
               </p>
@@ -528,7 +528,7 @@ export const DeskStickerStudio: React.FC<DeskStickerStudioProps> = ({
               <button
                 type="button"
                 onClick={() => onStickerConfigChange({ selectedRoom: '', searchQuery: '' })}
-                className="mt-4 px-4 py-2 bg-[#1F3864] text-white text-xs font-semibold"
+                className="mt-4 px-4 py-2 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] text-white text-xs font-semibold shadow-xs transition-colors"
               >
                 Tampilkan Semua Ruang
               </button>

@@ -52,12 +52,12 @@ export const CardSheetPreview: React.FC<CardSheetPreviewProps> = ({
             type="button"
             disabled={safeSheetIdx <= 0 || config.imposition === 'calibration'}
             onClick={() => onSheetIndexChange(Math.max(0, safeSheetIdx - 1))}
-            className="p-1.5 border border-[#DCE2EE] rounded hover:bg-[#F3F5F9] disabled:opacity-40"
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] hover:border-[#CBD5E1] disabled:opacity-40 disabled:pointer-events-none transition-colors"
             title="Lembar sebelumnya"
           >
             <ChevronLeft className="w-4 h-4 text-[#1F3864]" />
           </button>
-          <span className="font-mono text-xs font-semibold text-[#1F3864] tabular-nums whitespace-nowrap">
+          <span className="font-mono text-xs font-semibold text-[#1F3864] tabular-nums whitespace-nowrap px-1">
             {config.imposition === 'calibration'
               ? 'TES KALIBRASI (2 HAL)'
               : `LEMBAR ${safeSheetIdx + 1} / ${totalSheets}`}
@@ -66,12 +66,12 @@ export const CardSheetPreview: React.FC<CardSheetPreviewProps> = ({
             type="button"
             disabled={safeSheetIdx >= totalSheets - 1 || config.imposition === 'calibration'}
             onClick={() => onSheetIndexChange(Math.min(totalSheets - 1, safeSheetIdx + 1))}
-            className="p-1.5 border border-[#DCE2EE] rounded hover:bg-[#F3F5F9] disabled:opacity-40"
+            className="w-8 h-8 flex items-center justify-center rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] hover:border-[#CBD5E1] disabled:opacity-40 disabled:pointer-events-none transition-colors"
             title="Lembar berikutnya"
           >
             <ChevronRight className="w-4 h-4 text-[#1F3864]" />
           </button>
-          <span className="text-xs text-[#55637A] font-mono tabular-nums whitespace-nowrap ml-2">
+          <span className="text-xs text-[#55637A] font-mono tabular-nums whitespace-nowrap ml-1.5">
             {geo.cols}×{geo.rows} ({geo.cardsPerSheet}/lembar) · Jarak {geo.gapXmm}×{geo.gapYmm}mm · Margin {geo.originX.toFixed(1)}/{geo.originY.toFixed(1)}mm
           </span>
         </div>
@@ -137,7 +137,7 @@ export const CardSheetPreview: React.FC<CardSheetPreviewProps> = ({
           <button
             type="button"
             onClick={() => onPrintBatch('current')}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#1F3864] text-[#1F3864] hover:bg-[#F3F5F9] text-xs font-semibold whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#1F3864] text-[#1F3864] text-xs font-semibold shadow-2xs whitespace-nowrap shrink-0 transition-all duration-150 active:scale-[0.98]"
             title="Cetak hanya lembar yang sedang dilihat"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -146,7 +146,7 @@ export const CardSheetPreview: React.FC<CardSheetPreviewProps> = ({
           <button
             type="button"
             onClick={() => onPrintBatch('all')}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1F3864] text-white text-xs font-semibold hover:bg-[#16294B] whitespace-nowrap shrink-0"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] text-white text-xs font-semibold shadow-xs hover:shadow whitespace-nowrap shrink-0 transition-all duration-150 active:scale-[0.98]"
             title="Cetak seluruh lembar hasil filter saat ini"
           >
             <Printer className="w-3.5 h-3.5 text-[#C9A227]" />

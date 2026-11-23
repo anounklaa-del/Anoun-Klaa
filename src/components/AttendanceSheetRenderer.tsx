@@ -256,7 +256,7 @@ function AttendancePageMarkup({
       </div>
 
       {/* Main Attendance Table with Staggered Signature Columns */}
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <table
           style={{
             width: '100%',
@@ -492,7 +492,7 @@ function AttendancePageMarkup({
             gridTemplateColumns: '1.05fr 1.2fr',
             gap: '4mm',
             flexShrink: 0,
-            marginTop: isUltraDense ? '0.3mm' : '0.8mm',
+            marginTop: isUltraDense ? '1.2mm' : '2.8mm',
             alignItems: 'stretch',
           }}
         >

@@ -179,10 +179,10 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-[#F3F5F9] p-6">
+    <div className="h-full overflow-y-auto bg-[#F4F6FA] p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header Summary */}
-        <div className="bg-white border border-[#DCE2EE] p-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] p-5 flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="font-mono text-xs uppercase tracking-wider text-[#C9A227] font-semibold">
               Pusat Ekspor Pracetak &amp; Arsip Digital
@@ -200,7 +200,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
             type="button"
             disabled={busyTask !== null}
             onClick={handleDownloadZip}
-            className="flex items-center gap-2 px-5 py-3 bg-[#1F3864] hover:bg-[#16294B] disabled:opacity-60 text-white text-sm font-semibold whitespace-nowrap shrink-0"
+            className="flex items-center gap-2 px-5 py-3 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] disabled:opacity-60 text-white text-sm font-semibold shadow-xs hover:shadow transition-all duration-150 active:scale-[0.98] whitespace-nowrap shrink-0"
           >
             <Archive className="w-4 h-4 text-[#C9A227]" />
             Unduh Paket Arsip Lengkap (.ZIP)
@@ -209,12 +209,12 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
 
         {/* Active Progress Strip */}
         {busyTask && (
-          <div className="bg-white border border-[#1F3864] p-4">
+          <div className="bg-white border border-[#1F3864] rounded-xl p-4">
             <div className="flex items-center justify-between text-xs font-mono text-[#1F3864] mb-2">
               <span>{progressMsg}</span>
               <span className="font-bold tabular-nums">{progressPct}%</span>
             </div>
-            <div className="w-full h-2 bg-[#E2E8F0] overflow-hidden">
+            <div className="w-full h-2 rounded-sm bg-[#E2E8F0] overflow-hidden">
               <div
                 className="h-full bg-[#1F3864] transition-all duration-200"
                 style={{ width: `${progressPct}%` }}
@@ -224,7 +224,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
         )}
 
         {lastZipReport && !busyTask && (
-          <div className="bg-[#ECFDF5] border border-[#10B981] px-4 py-3 flex items-center justify-between text-sm text-[#065F46]">
+          <div className="bg-[#ECFDF5] border border-[#10B981] rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#065F46]">
             <span className="flex items-center gap-2 font-medium">
               <CheckCircle2 className="w-4 h-4 text-[#059669]" />
               Paket arsip terstruktur berhasil dikompresi ({lastZipReport.files} berkas dalam 4 folder).
@@ -237,8 +237,8 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
 
         {/* Color & Resolution Prepress Parameters */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-          <div className="bg-white border border-[#DCE2EE] p-5 space-y-4">
-            <div className="flex items-center gap-2 border-b border-[#DCE2EE] pb-3">
+          <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] p-5 space-y-4">
+            <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-3">
               <ShieldCheck className="w-4 h-4 text-[#1F3864]" />
               <h3 className="font-display font-bold text-sm text-[#1F3864]">
                 Setelan Warna CMYK &amp; Resolusi PDF/X-1a
@@ -252,7 +252,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
               <select
                 value={config.dpi}
                 onChange={(e) => onConfigChange({ dpi: Number(e.target.value) as 300 | 450 | 600 })}
-                className="w-full px-3 py-2 border border-[#CBD5E1] text-sm bg-white text-[#131C31]"
+                className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1] text-sm bg-white text-[#131C31]"
               >
                 <option value={300}>300 DPI — Standar Industri Cetak (Direkomendasikan)</option>
                 <option value={450}>450 DPI — Ultra Tajam Teks Jadwal Kecil</option>
@@ -269,7 +269,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
                 onChange={(e) =>
                   onConfigChange({ iccProfile: e.target.value as PrepressConfig['iccProfile'] })
                 }
-                className="w-full px-3 py-2 border border-[#CBD5E1] text-sm bg-white text-[#131C31]"
+                className="w-full px-3 py-2 rounded-lg border border-[#CBD5E1] text-sm bg-white text-[#131C31]"
               >
                 {Object.values(ICC_PROFILES).map((p) => (
                   <option key={p.id} value={p.id}>
@@ -304,8 +304,8 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
           </div>
 
           {/* Individual Print & Layered Source Downloads */}
-          <div className="bg-white border border-[#DCE2EE] p-5 space-y-4">
-            <div className="flex items-center gap-2 border-b border-[#DCE2EE] pb-3">
+          <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] p-5 space-y-4">
+            <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-3">
               <Download className="w-4 h-4 text-[#1F3864]" />
               <h3 className="font-display font-bold text-sm text-[#1F3864]">
                 Unduh Berkas Satuan &amp; Sumber Berlapis
@@ -317,7 +317,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
                 type="button"
                 disabled={busyTask !== null}
                 onClick={() => handleExportPdfx()}
-                className="w-full flex items-center justify-between px-3.5 py-2.5 bg-[#1F3864] text-white hover:bg-[#16294B] disabled:opacity-50 text-xs font-semibold"
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] disabled:opacity-50 text-white text-xs font-semibold shadow-xs hover:shadow transition-all duration-150 active:scale-[0.98]"
               >
                 <span className="flex items-center gap-2">
                   <FileText className="w-4 h-4 text-[#C9A227]" />
@@ -330,7 +330,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
                 type="button"
                 disabled={busyTask !== null}
                 onClick={() => handleExportPdfx('calibration')}
-                className="w-full flex items-center justify-between px-3.5 py-2 border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#1F3864] text-xs font-semibold"
+                className="w-full flex items-center justify-between px-3.5 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#94A3B8] text-[#1F3864] text-xs font-semibold shadow-2xs transition-all duration-150"
               >
                 <span>Lembar Tes Kalibrasi Duplex (+ / ○) PDF/X-1a</span>
                 <span className="font-mono text-[11px]">2 Hal</span>
@@ -344,7 +344,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
                   <button
                     type="button"
                     onClick={() => handleDownloadLayeredSvg('front')}
-                    className="flex items-center justify-center gap-1 px-2 py-2 border border-[#CBD5E1] hover:bg-[#F1F5F9] text-xs font-medium text-[#1F3864]"
+                    className="flex items-center justify-center gap-1 px-2 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] hover:border-[#94A3B8] text-xs font-medium text-[#1F3864] transition-colors"
                   >
                     <Layers className="w-3.5 h-3.5" />
                     Depan
@@ -352,7 +352,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
                   <button
                     type="button"
                     onClick={() => handleDownloadLayeredSvg('back')}
-                    className="flex items-center justify-center gap-1 px-2 py-2 border border-[#CBD5E1] hover:bg-[#F1F5F9] text-xs font-medium text-[#1F3864]"
+                    className="flex items-center justify-center gap-1 px-2 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] hover:border-[#94A3B8] text-xs font-medium text-[#1F3864] transition-colors"
                   >
                     <Layers className="w-3.5 h-3.5" />
                     Belakang
@@ -360,7 +360,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
                   <button
                     type="button"
                     onClick={() => handleDownloadLayeredSvg('foldable')}
-                    className="flex items-center justify-center gap-1 px-2 py-2 border border-[#CBD5E1] hover:bg-[#F1F5F9] text-xs font-medium text-[#1F3864]"
+                    className="flex items-center justify-center gap-1 px-2 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] hover:border-[#94A3B8] text-xs font-medium text-[#1F3864] transition-colors"
                   >
                     <Layers className="w-3.5 h-3.5" />
                     Lipat 2-Sisi
@@ -372,7 +372,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
                 <button
                   type="button"
                   onClick={handleDownloadIcc}
-                  className="flex items-center justify-center gap-1.5 px-2.5 py-2 border border-[#CBD5E1] hover:bg-[#F1F5F9] text-xs font-medium text-[#334155]"
+                  className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] hover:border-[#94A3B8] text-xs font-medium text-[#334155] transition-colors"
                 >
                   <FileCode2 className="w-3.5 h-3.5" />
                   Profil .ICC CMYK
@@ -380,7 +380,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
                 <button
                   type="button"
                   onClick={handleDownloadStandaloneHtml}
-                  className="flex items-center justify-center gap-1.5 px-2.5 py-2 border border-[#CBD5E1] hover:bg-[#F1F5F9] text-xs font-medium text-[#334155]"
+                  className="flex items-center justify-center gap-1.5 px-2.5 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] hover:border-[#94A3B8] text-xs font-medium text-[#334155] transition-colors"
                 >
                   <FileCode2 className="w-3.5 h-3.5" />
                   HTML Paste Nov
@@ -390,14 +390,14 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
           </div>
 
           {/* Structured Archive Folder Tree Preview */}
-          <div className="bg-white border border-[#DCE2EE] p-5 space-y-3">
-            <div className="flex items-center gap-2 border-b border-[#DCE2EE] pb-3">
+          <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] p-5 space-y-3">
+            <div className="flex items-center gap-2 border-b border-[#E2E8F0] pb-3">
               <FolderTree className="w-4 h-4 text-[#1F3864]" />
               <h3 className="font-display font-bold text-sm text-[#1F3864]">
                 Struktur Folder Arsip Konsisten
               </h3>
             </div>
-            <pre className="font-mono text-[11px] leading-relaxed text-[#334155] bg-[#F8FAFC] border border-[#E2E8F0] p-3 overflow-x-auto">
+            <pre className="font-mono text-[11px] leading-relaxed text-[#334155] rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] p-3 overflow-x-auto">
 {`SMAN1ALALAK_PAS2026_Arsip_Pracetak/
 ├── 01_PDFX1a_CMYK_PrintReady/
 │   ├── Kartu_PAS_PDFX1a_CMYK_${config.dpi}DPI.pdf

@@ -44,10 +44,10 @@ export const ProductionDocsPanel: React.FC<ProductionDocsPanelProps> = ({
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-[#F3F5F9] p-6">
+    <div className="h-full overflow-y-auto bg-[#F4F6FA] p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Top Audit Banner */}
-        <div className="bg-white border border-[#DCE2EE] p-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] p-5 flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="font-mono text-xs uppercase tracking-wider text-[#C9A227] font-semibold">
               Dokumen Utama Proyek · Audit &amp; Evaluasi Tim Produksi
@@ -56,7 +56,7 @@ export const ProductionDocsPanel: React.FC<ProductionDocsPanelProps> = ({
               Pengecekan Kelengkapan Aset, Panduan Produksi &amp; Laporan Efisiensi Pengarsipan
             </h2>
           </div>
-          <div className="flex items-center gap-3 font-mono text-xs bg-[#F8FAFC] border border-[#DCE2EE] px-4 py-2.5">
+          <div className="flex items-center gap-3 font-mono text-xs rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] px-4 py-2.5">
             <span className="text-[#475569]">Verifikasi Akhir:</span>
             <strong className="text-[#059669] tabular-nums">
               {passedCount}/{checklist.length} ELEMEN LENGKAP
@@ -65,8 +65,8 @@ export const ProductionDocsPanel: React.FC<ProductionDocsPanelProps> = ({
         </div>
 
         {/* 1. Asset Completeness Final Audit */}
-        <section className="bg-white border border-[#DCE2EE]">
-          <div className="px-5 py-3.5 border-b border-[#DCE2EE] flex items-center justify-between">
+        <section className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-[#E2E8F0] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ClipboardCheck className="w-4 h-4 text-[#1F3864]" />
               <h3 className="font-display font-bold text-sm text-[#1F3864]">
@@ -75,7 +75,7 @@ export const ProductionDocsPanel: React.FC<ProductionDocsPanelProps> = ({
             </div>
             <span className="font-mono text-xs text-[#64748B]">Evaluasi Otomatis Langsung</span>
           </div>
-          <div className="divide-y divide-[#E2E8F0]">
+          <div className="divide-y divide-[#F1F5F9]">
             {checklist.map((item) => (
               <div
                 key={item.id}
@@ -92,7 +92,7 @@ export const ProductionDocsPanel: React.FC<ProductionDocsPanelProps> = ({
                     <div className="text-xs text-[#475569] mt-0.5">{item.detail}</div>
                   </div>
                 </div>
-                <span className="font-mono text-[11px] text-[#44546A] border border-[#DCE2EE] px-2 py-0.5 whitespace-nowrap shrink-0">
+                <span className="font-mono text-[11px] text-[#44546A] rounded-md border border-[#E2E8F0] bg-[#F8FAFC] px-2 py-0.5 whitespace-nowrap shrink-0">
                   {item.category}
                 </span>
               </div>
@@ -101,8 +101,8 @@ export const ProductionDocsPanel: React.FC<ProductionDocsPanelProps> = ({
         </section>
 
         {/* 2. Archiving Workflow Efficiency Report */}
-        <section className="bg-white border border-[#DCE2EE]">
-          <div className="px-5 py-3.5 border-b border-[#DCE2EE] flex items-center justify-between">
+        <section className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-[#E2E8F0] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileBarChart2 className="w-4 h-4 text-[#1F3864]" />
               <h3 className="font-display font-bold text-sm text-[#1F3864]">
@@ -117,7 +117,7 @@ export const ProductionDocsPanel: React.FC<ProductionDocsPanelProps> = ({
                   generateEfficiencyReportMarkdown(metrics, checklist, config),
                 )
               }
-              className="flex items-center gap-1.5 px-2.5 py-1 border border-[#CBD5E1] text-xs font-medium text-[#1F3864] hover:bg-[#F1F5F9]"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] text-xs font-medium text-[#1F3864] transition-colors"
             >
               <Copy className="w-3.5 h-3.5" />
               {copiedId === 'eff' ? 'Tersalin!' : 'Salin Laporan (Markdown)'}
@@ -205,8 +205,8 @@ export const ProductionDocsPanel: React.FC<ProductionDocsPanelProps> = ({
         </section>
 
         {/* 3. Production Team Operations Guide */}
-        <section className="bg-white border border-[#DCE2EE]">
-          <div className="px-5 py-3.5 border-b border-[#DCE2EE] flex items-center justify-between">
+        <section className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-[#E2E8F0] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4 text-[#1F3864]" />
               <h3 className="font-display font-bold text-sm text-[#1F3864]">
@@ -216,7 +216,7 @@ export const ProductionDocsPanel: React.FC<ProductionDocsPanelProps> = ({
             <button
               type="button"
               onClick={() => copyMarkdown('sop', generateProductionGuideMarkdown(config))}
-              className="flex items-center gap-1.5 px-2.5 py-1 border border-[#CBD5E1] text-xs font-medium text-[#1F3864] hover:bg-[#F1F5F9]"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] text-xs font-medium text-[#1F3864] transition-colors"
             >
               <Copy className="w-3.5 h-3.5" />
               {copiedId === 'sop' ? 'Tersalin!' : 'Salin SOP Produksi'}

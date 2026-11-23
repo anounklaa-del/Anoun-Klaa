@@ -235,7 +235,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     <div className="h-full overflow-y-auto bg-[#F4F6FA] p-5 lg:p-7">
       <div className="max-w-[1380px] mx-auto space-y-6">
         {/* Top Hero / Context Header */}
-        <section className="bg-white border border-[#DCE2EE] p-5 lg:p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <section className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-5 lg:p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div className="min-w-0 space-y-1.5">
             <h1 className="font-display font-bold text-xl lg:text-2xl text-[#131C31] tracking-tight text-balance">
               Dashboard Administrasi &amp; Pracetak PAS
@@ -259,7 +259,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <button
               type="button"
               onClick={onPrintCards}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#C9A227] hover:bg-[#B58F1E] text-[#0F172A] text-xs font-bold whitespace-nowrap transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#C9A227] hover:bg-[#B8921D] text-[#0F172A] text-xs font-bold shadow-xs hover:shadow transition-all duration-150 active:scale-[0.98] whitespace-nowrap"
             >
               <Printer className="w-4 h-4" />
               Cetak Kartu PAS ({stats.cardSheets} Hal)
@@ -267,7 +267,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <button
               type="button"
               onClick={() => onNavigateTab('attendance')}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1F3864] hover:bg-[#16294B] text-white text-xs font-semibold whitespace-nowrap transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] text-white text-xs font-semibold shadow-xs hover:shadow transition-all duration-150 active:scale-[0.98] whitespace-nowrap"
             >
               <ClipboardCheck className="w-4 h-4 text-[#C9A227]" />
               Buka Daftar Hadir
@@ -277,44 +277,44 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
         {/* 4-Column KPI Summary Strip */}
         <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div className="bg-white border border-[#DCE2EE] p-4 flex flex-col justify-between gap-2">
+          <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] p-4 flex flex-col justify-between gap-2">
             <div className="text-xs font-medium text-[#55637A]">Total Peserta Terdaftar</div>
             <div className="font-mono text-2xl font-bold text-[#1F3864] tabular-nums">
               {students.length} <span className="text-sm font-sans font-normal text-[#64748B]">siswa</span>
             </div>
-            <div className="text-[11px] text-[#64748B] font-mono tabular-nums pt-2 border-t border-[#EEF2F6]">
+            <div className="text-[11px] text-[#64748B] font-mono tabular-nums pt-2 border-t border-[#F1F5F9]">
               {classList.length} kelas aktif · {filteredStudents.length} masuk filter kartu
             </div>
           </div>
 
-          <div className="bg-white border border-[#DCE2EE] p-4 flex flex-col justify-between gap-2">
+          <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] p-4 flex flex-col justify-between gap-2">
             <div className="text-xs font-medium text-[#55637A]">Ruang &amp; Meja Ujian</div>
             <div className="font-mono text-2xl font-bold text-[#1F3864] tabular-nums">
               {roomRows.length} <span className="text-sm font-sans font-normal text-[#64748B]">ruang</span>
             </div>
-            <div className="text-[11px] text-[#64748B] font-mono tabular-nums pt-2 border-t border-[#EEF2F6]">
+            <div className="text-[11px] text-[#64748B] font-mono tabular-nums pt-2 border-t border-[#F1F5F9]">
               {totalDesks} meja terpetakan · rata-rata {avgPerRoom} siswa/ruang
             </div>
           </div>
 
-          <div className="bg-white border border-[#DCE2EE] p-4 flex flex-col justify-between gap-2">
+          <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] p-4 flex flex-col justify-between gap-2">
             <div className="text-xs font-medium text-[#55637A]">Total Estimasi Cetak</div>
             <div className="font-mono text-2xl font-bold text-[#1F3864] tabular-nums">
               {totalPrintPages}{' '}
               <span className="text-sm font-sans font-normal text-[#64748B]">halaman</span>
             </div>
-            <div className="text-[11px] text-[#64748B] font-mono tabular-nums pt-2 border-t border-[#EEF2F6]">
+            <div className="text-[11px] text-[#64748B] font-mono tabular-nums pt-2 border-t border-[#F1F5F9]">
               {stats.cardSheets} kartu · {stats.seatingPages} denah · {stats.attendancePages} absen
             </div>
           </div>
 
-          <div className="bg-white border border-[#DCE2EE] p-4 flex flex-col justify-between gap-2">
+          <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] p-4 flex flex-col justify-between gap-2">
             <div className="text-xs font-medium text-[#55637A]">Kesiapan Jadwal &amp; QR</div>
             <div className="font-mono text-2xl font-bold text-[#1F3864] tabular-nums">
               {scheduledStudentsCount}/{students.length}{' '}
               <span className="text-sm font-sans font-normal text-[#64748B]">siap</span>
             </div>
-            <div className="text-[11px] text-[#64748B] font-mono tabular-nums pt-2 border-t border-[#EEF2F6]">
+            <div className="text-[11px] text-[#64748B] font-mono tabular-nums pt-2 border-t border-[#F1F5F9]">
               {stats.missingScheduleCount === 0
                 ? 'Semua kelas memiliki jadwal PAS'
                 : `${stats.missingScheduleCount} siswa belum ada jadwal`}
@@ -325,8 +325,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         {/* Main 2-Column Interactive Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
           {/* Left 7 Columns: Interactive Room Distribution & Quick Jump Table */}
-          <section className="xl:col-span-7 bg-white border border-[#DCE2EE] flex flex-col min-w-0">
-            <div className="p-4 border-b border-[#DCE2EE] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <section className="xl:col-span-7 bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] overflow-hidden flex flex-col min-w-0">
+            <div className="p-4 lg:p-5 border-b border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h2 className="font-display font-bold text-sm text-[#131C31]">
                   Distribusi Ruang Ujian &amp; Akses Dokumen per Ruang
@@ -337,20 +337,20 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <div className="relative">
-                  <Search className="w-3.5 h-3.5 text-[#64748B] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-3.5 h-3.5 text-[#64748B] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={roomSearch}
                     onChange={(e) => setRoomSearch(e.target.value)}
                     placeholder="Cari ruang / kelas..."
-                    className="pl-8 pr-2.5 py-1.5 w-44 text-xs border border-[#CBD5E1] bg-white text-[#131C31] focus:outline-none focus:border-[#1F3864]"
+                    className="pl-8 pr-3 py-1.5 w-44 text-xs rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] transition-colors focus:border-[#1F3864] focus:ring-2 focus:ring-[#1F3864]/15"
                   />
                 </div>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortOption)}
                   aria-label="Urutkan ruang"
-                  className="px-2.5 py-1.5 text-xs border border-[#CBD5E1] bg-white text-[#131C31]"
+                  className="px-3 py-1.5 text-xs rounded-lg border border-[#CBD5E1] bg-white text-[#131C31] transition-colors focus:border-[#1F3864]"
                 >
                   <option value="room_asc">Urut Ruang</option>
                   <option value="count_desc">Siswa Terbanyak</option>
@@ -362,7 +362,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-[#F8FAFC] border-b border-[#DCE2EE] text-[11px] font-semibold text-[#44546A]">
+                  <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[11px] font-semibold text-[#44546A]">
                     <th className="py-2.5 px-4 whitespace-nowrap">Ruang</th>
                     <th className="py-2.5 px-3">Rombel / Kelas</th>
                     <th className="py-2.5 px-3 whitespace-nowrap">Rentang No.</th>
@@ -371,7 +371,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                     <th className="py-2.5 px-4 text-right whitespace-nowrap">Buka Langsung</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#EEF2F6]">
+                <tbody className="divide-y divide-[#F1F5F9]">
                   {filteredRoomRows.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-8 px-4 text-center text-[#64748B]">
@@ -388,7 +388,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                           RUANG {row.room}
                         </td>
                         <td className="py-2.5 px-3 text-[#334155]">
-                          <div className="truncate max-w-[180px]" title={row.classesLabel}>
+                          <div className="truncate max-w-[170px]" title={row.classesLabel}>
                             {row.classesLabel}
                           </div>
                           <div className="font-mono text-[10px] text-[#64748B] tabular-nums">
@@ -406,11 +406,11 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                           {row.desksCount}
                         </td>
                         <td className="py-2 px-4 text-right whitespace-nowrap">
-                          <div className="inline-flex items-center border border-[#CBD5E1] bg-white">
+                          <div className="inline-flex items-center gap-1">
                             <button
                               type="button"
                               onClick={() => onQuickJumpRoom(row.room, 'studio')}
-                              className="px-2 py-1 text-[11px] font-medium text-[#1F3864] hover:bg-[#EEF2FA] transition-colors"
+                              className="px-2.5 py-1 rounded-md border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] hover:border-[#CBD5E1] text-[11px] font-medium text-[#334155] hover:text-[#1F3864] transition-colors"
                               title={`Filter Kartu PAS untuk RUANG ${row.room}`}
                             >
                               Kartu
@@ -418,7 +418,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                             <button
                               type="button"
                               onClick={() => onQuickJumpRoom(row.room, 'sticker')}
-                              className="px-2 py-1 text-[11px] font-medium text-[#1F3864] border-l border-[#CBD5E1] hover:bg-[#EEF2FA] transition-colors"
+                              className="px-2.5 py-1 rounded-md border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] hover:border-[#CBD5E1] text-[11px] font-medium text-[#334155] hover:text-[#1F3864] transition-colors"
                               title={`Buka Stiker Meja RUANG ${row.room}`}
                             >
                               Stiker
@@ -426,7 +426,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                             <button
                               type="button"
                               onClick={() => onQuickJumpRoom(row.room, 'seating')}
-                              className="px-2 py-1 text-[11px] font-medium text-[#1F3864] border-l border-[#CBD5E1] hover:bg-[#EEF2FA] transition-colors"
+                              className="px-2.5 py-1 rounded-md border border-[#E2E8F0] bg-white hover:bg-[#F1F5F9] hover:border-[#CBD5E1] text-[11px] font-medium text-[#334155] hover:text-[#1F3864] transition-colors"
                               title={`Buka Denah Ruang RUANG ${row.room}`}
                             >
                               Denah
@@ -434,7 +434,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                             <button
                               type="button"
                               onClick={() => onQuickJumpRoom(row.room, 'attendance')}
-                              className="px-2 py-1 text-[11px] font-semibold text-white bg-[#1F3864] hover:bg-[#16294B] border-l border-[#1F3864] transition-colors"
+                              className="px-2.5 py-1 rounded-md bg-[#1F3864] hover:bg-[#172B4D] text-[11px] font-semibold text-white shadow-2xs transition-colors"
                               title={`Buka Daftar Hadir RUANG ${row.room}`}
                             >
                               Absen
@@ -452,8 +452,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           {/* Right 5 Columns: Quick Module Access + Class Tier Breakdown + Schedule Builder */}
           <div className="xl:col-span-5 space-y-6 min-w-0">
             {/* Quick Modules Panel */}
-            <section className="bg-white border border-[#DCE2EE]">
-              <div className="p-4 border-b border-[#DCE2EE]">
+            <section className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] overflow-hidden">
+              <div className="p-4 lg:px-5 border-b border-[#E2E8F0]">
                 <h2 className="font-display font-bold text-sm text-[#131C31]">
                   Akses Cepat Modul Pracetak
                 </h2>
@@ -461,16 +461,16 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                   Pilih modul kerja sesuai kebutuhan cetak panitia ujian.
                 </p>
               </div>
-              <div className="divide-y divide-[#EEF2F6]">
+              <div className="divide-y divide-[#F1F5F9]">
                 {modules.map((mod) => (
                   <button
                     key={mod.id}
                     type="button"
                     onClick={() => onNavigateTab(mod.id)}
-                    className="w-full px-4 py-3 flex items-center justify-between gap-3 text-left hover:bg-[#F8FAFC] transition-colors group"
+                    className="w-full px-4 lg:px-5 py-3 flex items-center justify-between gap-3 text-left hover:bg-[#F8FAFC] transition-colors group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-8 h-8 border border-[#DCE2EE] bg-[#F8FAFC] flex items-center justify-center shrink-0">
+                      <div className="w-9 h-9 rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] group-hover:bg-[#EEF2FA] flex items-center justify-center shrink-0 transition-colors">
                         {mod.icon}
                       </div>
                       <div className="min-w-0">
@@ -482,9 +482,9 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                         </div>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#1F3864] whitespace-nowrap shrink-0">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#F8FAFC] border border-[#E2E8F0] group-hover:bg-[#1F3864] group-hover:border-[#1F3864] group-hover:text-white text-[11px] font-semibold text-[#1F3864] whitespace-nowrap shrink-0 transition-colors">
                       {mod.actionLabel}
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+                      <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
                     </span>
                   </button>
                 ))}
@@ -492,7 +492,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </section>
 
             {/* Proportion by Jenjang + Schedule Quick-Apply for Attendance */}
-            <section className="bg-white border border-[#DCE2EE] p-4 space-y-4">
+            <section className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] p-4 lg:p-5 space-y-4">
               <div>
                 <h2 className="font-display font-bold text-sm text-[#131C31]">
                   Sebaran Peserta per Jenjang &amp; Jadwal PAS
@@ -520,9 +520,9 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                           {count} siswa ({pct}%)
                         </span>
                       </div>
-                      <div className="h-2 bg-[#EEF2F6] overflow-hidden">
+                      <div className="h-2 rounded-sm bg-[#EEF2F6] overflow-hidden">
                         <div
-                          className={`h-full ${barClass}`}
+                          className={`h-full rounded-sm ${barClass}`}
                           style={{ width: `${Math.max(2, pct)}%` }}
                         />
                       </div>
@@ -532,24 +532,22 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               </div>
 
               {/* Interactive Schedule Picker by Jenjang */}
-              <div className="pt-3 border-t border-[#EEF2F6]">
-                <div className="flex items-center justify-between gap-2 mb-2.5">
+              <div className="pt-3 border-t border-[#F1F5F9]">
+                <div className="flex items-center justify-between gap-2 mb-3">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-[#131C31]">
                     <CalendarDays className="w-3.5 h-3.5 text-[#1F3864]" />
                     Jadwal PAS November
                   </div>
-                  <div className="flex border border-[#CBD5E1]">
-                    {(['X', 'XI', 'XII'] as const).map((tier, idx) => (
+                  <div className="inline-flex p-0.5 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-0.5">
+                    {(['X', 'XI', 'XII'] as const).map((tier) => (
                       <button
                         key={tier}
                         type="button"
                         onClick={() => setSelectedScheduleTier(tier)}
-                        className={`px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap ${
-                          idx > 0 ? 'border-l border-[#CBD5E1]' : ''
-                        } ${
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all duration-150 ${
                           selectedScheduleTier === tier
-                            ? 'bg-[#1F3864] text-white'
-                            : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                            ? 'bg-[#1F3864] text-white shadow-2xs'
+                            : 'text-[#475569] hover:text-[#131C31]'
                         }`}
                       >
                         Kelas {tier}
@@ -558,11 +556,11 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                   </div>
                 </div>
 
-                <div className="max-h-56 overflow-y-auto border border-[#DCE2EE] divide-y divide-[#EEF2F6]">
+                <div className="max-h-56 overflow-y-auto rounded-lg border border-[#E2E8F0] divide-y divide-[#F1F5F9]">
                   {tierSchedules.map(([date, time, subject], i) => (
                     <div
                       key={`${date}-${time}-${subject}-${i}`}
-                      className="px-3 py-2 flex items-center justify-between gap-2 text-xs hover:bg-[#F8FAFC]"
+                      className="px-3 py-2.5 flex items-center justify-between gap-2 text-xs hover:bg-[#F8FAFC] transition-colors"
                     >
                       <div className="min-w-0">
                         <div className="font-medium text-[#131C31] truncate">{subject}</div>
@@ -579,7 +577,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                             time,
                           })
                         }
-                        className="px-2.5 py-1 border border-[#CBD5E1] bg-white hover:bg-[#1F3864] hover:text-white hover:border-[#1F3864] text-[#1F3864] text-[11px] font-semibold whitespace-nowrap shrink-0 transition-colors"
+                        className="px-2.5 py-1 rounded-md border border-[#CBD5E1] bg-white hover:bg-[#1F3864] hover:text-white hover:border-[#1F3864] text-[#1F3864] text-[11px] font-semibold whitespace-nowrap shrink-0 transition-all duration-150"
                       >
                         Pakai Absen
                       </button>

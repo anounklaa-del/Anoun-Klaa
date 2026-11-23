@@ -225,7 +225,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
   return (
     <div className="flex h-full min-h-0 overflow-hidden bg-[#F3F5F9]">
       {/* Left Form Panel: Tambah / Edit Data Manual */}
-      <aside className="w-96 shrink-0 bg-white border-r border-[#DCE2EE] overflow-y-auto p-5 flex flex-col gap-4 text-xs">
+      <aside className="w-88 xl:w-96 shrink-0 bg-white border-r border-[#E2E8F0] overflow-y-auto p-5 flex flex-col gap-4 text-xs">
         <div className="flex items-center justify-between gap-2 pb-3 border-b border-[#E2E8F0]">
           <div>
             <h2 className="font-display font-bold text-sm text-[#1F3864]">
@@ -239,7 +239,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
             <button
               type="button"
               onClick={() => resetFormToCreate(students)}
-              className="flex items-center gap-1 px-2 py-1 border border-[#CBD5E1] text-[#44546A] hover:bg-[#F8FAFC]"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F1F5F9] text-[#44546A] font-medium transition-colors"
             >
               <X className="w-3 h-3" />
               Batal
@@ -262,7 +262,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
                   if (!userEditedManually) setUserInput(val);
                 }}
                 placeholder="620"
-                className="w-full px-2.5 py-2 border border-[#CBD5E1] font-mono tabular-nums text-[#131C31]"
+                className="w-full px-2.5 py-2 rounded-lg border border-[#CBD5E1] font-mono tabular-nums text-[#131C31]"
               />
             </div>
 
@@ -274,7 +274,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
                 value={ruangInput}
                 onChange={(e) => setRuangInput(e.target.value)}
                 placeholder="01"
-                className="w-full px-2.5 py-2 border border-[#CBD5E1] font-mono tabular-nums text-[#131C31]"
+                className="w-full px-2.5 py-2 rounded-lg border border-[#CBD5E1] font-mono tabular-nums text-[#131C31]"
               />
               <datalist id="room-suggestions">
                 {rooms.map((r) => (
@@ -284,16 +284,16 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'].map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => setRuangInput(r)}
-                className={`px-2 py-0.5 font-mono text-[10px] border ${
+                className={`px-2 py-1 rounded-md font-mono text-[10px] border transition-colors ${
                   normalizeRoomLabel(ruangInput) === r
-                    ? 'bg-[#1F3864] text-white border-[#1F3864]'
-                    : 'bg-[#F8FAFC] text-[#44546A] border-[#CBD5E1] hover:bg-[#EEF2FA]'
+                    ? 'bg-[#1F3864] text-white border-[#1F3864] shadow-2xs'
+                    : 'bg-[#F8FAFC] text-[#44546A] border-[#E2E8F0] hover:bg-[#EEF2FA]'
                 }`}
               >
                 R.{r}
@@ -308,21 +308,21 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
               value={namaInput}
               onChange={(e) => setNamaInput(e.target.value)}
               placeholder="Contoh: MUHAMMAD RIZKY PRATAMA"
-              className="w-full px-2.5 py-2 border border-[#CBD5E1] text-[#131C31] uppercase"
+              className="w-full px-2.5 py-2 rounded-lg border border-[#CBD5E1] text-[#131C31] uppercase"
             />
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1">
               <label className="text-[#44546A] font-semibold">Kelas</label>
-              <div className="flex border border-[#CBD5E1]">
+              <div className="inline-flex p-0.5 bg-[#F1F5F9] border border-[#E2E8F0] rounded-lg gap-0.5">
                 <button
                   type="button"
                   onClick={() => setKelasMode('preset')}
-                  className={`px-2 py-0.5 text-[10px] font-medium ${
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition-colors ${
                     kelasMode === 'preset'
-                      ? 'bg-[#1F3864] text-white'
-                      : 'bg-white text-[#44546A]'
+                      ? 'bg-[#1F3864] text-white shadow-2xs'
+                      : 'text-[#475569] hover:text-[#131C31]'
                   }`}
                 >
                   Daftar Kelas
@@ -330,10 +330,10 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
                 <button
                   type="button"
                   onClick={() => setKelasMode('custom')}
-                  className={`px-2 py-0.5 text-[10px] font-medium border-l border-[#CBD5E1] ${
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-semibold transition-colors ${
                     kelasMode === 'custom'
-                      ? 'bg-[#1F3864] text-white'
-                      : 'bg-white text-[#44546A]'
+                      ? 'bg-[#1F3864] text-white shadow-2xs'
+                      : 'text-[#475569] hover:text-[#131C31]'
                   }`}
                 >
                   Kelas Kustom
@@ -345,7 +345,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
               <select
                 value={kelasPreset}
                 onChange={(e) => setKelasPreset(e.target.value)}
-                className="w-full px-2.5 py-2 border border-[#CBD5E1] bg-white text-[#131C31]"
+                className="w-full px-2.5 py-2 rounded-lg border border-[#CBD5E1] bg-white text-[#131C31]"
               >
                 {KNOWN_CLASSES.map((k) => (
                   <option key={k} value={k}>
@@ -359,7 +359,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
                 value={kelasCustom}
                 onChange={(e) => setKelasCustom(e.target.value)}
                 placeholder="Contoh: X7 atau XI 8"
-                className="w-full px-2.5 py-2 border border-[#CBD5E1] text-[#131C31]"
+                className="w-full px-2.5 py-2 rounded-lg border border-[#CBD5E1] text-[#131C31]"
               />
             )}
           </div>
@@ -374,12 +374,12 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
                 setUserInput(e.target.value);
               }}
               placeholder="Otomatis mengikuti No. Peserta"
-              className="w-full px-2.5 py-2 border border-[#CBD5E1] font-mono tabular-nums text-[#131C31]"
+              className="w-full px-2.5 py-2 rounded-lg border border-[#CBD5E1] font-mono tabular-nums text-[#131C31]"
             />
           </div>
 
           {/* Real-time Preview Card/Sticker Strip */}
-          <div className="p-3 bg-[#F8FAFC] border border-[#DCE2EE] space-y-1 font-mono text-[11px] tabular-nums">
+          <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1 font-mono text-[11px] tabular-nums">
             <div className="text-[#64748B]">Pratinjau Identitas Cetak</div>
             <div className="font-bold text-[#1F3864]">
               {formatParticipantNo(noInput || '---')}
@@ -401,7 +401,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
 
           {formMessage && (
             <div
-              className={`p-2.5 border text-[11px] font-medium ${
+              className={`p-3 rounded-xl border text-[11px] font-medium ${
                 formMessage.type === 'ok'
                   ? 'bg-[#ECFDF5] border-[#059669] text-[#065F46]'
                   : 'bg-[#FEF2F2] border-[#DC2626] text-[#991B1B]'
@@ -413,7 +413,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1F3864] hover:bg-[#16294B] text-white font-bold text-xs"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-[#1F3864] hover:bg-[#172B4D] text-white font-bold text-xs shadow-xs hover:shadow transition-all duration-150 active:scale-[0.98]"
           >
             {editingOriginalNo ? (
               <>
@@ -433,7 +433,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
           <h3 className="font-display font-bold text-[11px] uppercase tracking-wider text-[#64748B]">
             Impor / Cadangan CSV
           </h3>
-          <label className="flex items-center justify-center gap-2 w-full px-3 py-2 border border-dashed border-[#94A3B8] hover:border-[#1F3864] hover:bg-[#F8FAFC] text-[#1F3864] font-semibold cursor-pointer">
+          <label className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-dashed border-[#94A3B8] hover:border-[#1F3864] hover:bg-[#F8FAFC] text-[#1F3864] font-semibold cursor-pointer transition-colors">
             <Upload className="w-3.5 h-3.5" />
             Impor File CSV / TSV Siswa
             <input
@@ -446,7 +446,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
           <button
             type="button"
             onClick={() => triggerCsvDownload(students)}
-            className="flex items-center justify-center gap-2 w-full px-3 py-2 border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#1F3864] font-semibold"
+            className="flex items-center justify-center gap-2 w-full px-3 py-2 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#94A3B8] text-[#1F3864] font-semibold shadow-2xs transition-all duration-150"
           >
             <Download className="w-3.5 h-3.5" />
             Ekspor Semua Data ({students.length} Siswa)
@@ -485,20 +485,20 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
 
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-[#64748B] absolute left-2.5 top-2" />
+              <Search className="w-3.5 h-3.5 text-[#64748B] absolute left-3 top-2" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari no, nama, kelas, ruang..."
-                className="pl-8 pr-3 py-1.5 text-xs border border-[#CBD5E1] bg-white w-56"
+                className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-[#CBD5E1] bg-white w-56"
               />
             </div>
 
             <select
               value={filterClass}
               onChange={(e) => setFilterClass(e.target.value)}
-              className="px-2.5 py-1.5 text-xs border border-[#CBD5E1] bg-white"
+              className="px-2.5 py-1.5 text-xs rounded-lg border border-[#CBD5E1] bg-white"
             >
               <option value="">Semua Kelas</option>
               {classOptions.map((c) => (
@@ -511,7 +511,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
             <select
               value={filterRoom}
               onChange={(e) => setFilterRoom(e.target.value)}
-              className="px-2.5 py-1.5 text-xs border border-[#CBD5E1] bg-white"
+              className="px-2.5 py-1.5 text-xs rounded-lg border border-[#CBD5E1] bg-white"
             >
               <option value="">Semua Ruang</option>
               {rooms.map((r) => (
@@ -525,14 +525,14 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
               <button
                 type="button"
                 onClick={() => setConfirmReset(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#44546A] text-xs font-medium"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#CBD5E1] bg-white hover:bg-[#F8FAFC] hover:border-[#94A3B8] text-[#44546A] text-xs font-medium shadow-2xs transition-colors"
                 title="Kembalikan daftar siswa ke 619 data awal SMAN 1 ALALAK"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Reset Bawaan ({STUDENTS_MASTER.length})
               </button>
             ) : (
-              <div className="flex items-center gap-1 border border-[#DC2626] bg-[#FEF2F2] px-2 py-1 text-xs">
+              <div className="flex items-center gap-1.5 rounded-lg border border-[#DC2626] bg-[#FEF2F2] px-2.5 py-1 text-xs">
                 <span className="text-[#991B1B] font-medium">Reset ke 619 siswa?</span>
                 <button
                   type="button"
@@ -545,14 +545,14 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
                       text: `Daftar peserta dikembalikan ke ${STUDENTS_MASTER.length} siswa bawaan.`,
                     });
                   }}
-                  className="px-2 py-0.5 bg-[#DC2626] text-white font-semibold"
+                  className="px-2 py-0.5 rounded-md bg-[#DC2626] hover:bg-[#B91C1C] text-white font-semibold transition-colors"
                 >
                   Ya
                 </button>
                 <button
                   type="button"
                   onClick={() => setConfirmReset(false)}
-                  className="px-2 py-0.5 bg-white border border-[#CBD5E1] text-[#334155]"
+                  className="px-2 py-0.5 rounded-md bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#334155] transition-colors"
                 >
                   Batal
                 </button>
@@ -563,7 +563,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
 
         {/* High-Density Data Table */}
         <div className="flex-1 overflow-auto p-5">
-          <div className="bg-white border border-[#DCE2EE] overflow-hidden">
+          <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-[0_1px_2px_rgba(15,23,42,0.03)] overflow-hidden">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-[#F8FAFC] border-b border-[#DCE2EE] text-[#44546A] font-display font-bold">
@@ -611,11 +611,11 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
                           {st.user}
                         </td>
                         <td className="py-2 px-3 text-right whitespace-nowrap">
-                          <div className="inline-flex items-center gap-1">
+                          <div className="inline-flex items-center gap-1.5">
                             <button
                               type="button"
                               onClick={() => onInspectStudentCard(st)}
-                              className="p-1.5 border border-[#DCE2EE] hover:bg-[#EEF2FA] text-[#1F3864]"
+                              className="p-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#EEF2FA] hover:border-[#CBD5E1] text-[#1F3864] transition-colors"
                               title="Lihat Kartu PAS & 3D siswa ini"
                             >
                               <CreditCard className="w-3.5 h-3.5" />
@@ -623,7 +623,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
                             <button
                               type="button"
                               onClick={() => handleStartEdit(st)}
-                              className="p-1.5 border border-[#DCE2EE] hover:bg-[#EEF2FA] text-[#1F3864]"
+                              className="p-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#EEF2FA] hover:border-[#CBD5E1] text-[#1F3864] transition-colors"
                               title="Edit data peserta"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
@@ -635,7 +635,7 @@ export const StudentDataManager: React.FC<StudentDataManagerProps> = ({
                                 if (editingOriginalNo === st.no) resetFormToCreate(students);
                                 onDeleteStudent(st.no);
                               }}
-                              className="p-1.5 border border-[#DCE2EE] hover:bg-[#FEF2F2] text-[#DC2626] disabled:opacity-40"
+                              className="p-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#FEF2F2] hover:border-[#FCA5A5] text-[#DC2626] disabled:opacity-40 transition-colors"
                               title="Hapus peserta"
                             >
                               <Trash2 className="w-3.5 h-3.5" />

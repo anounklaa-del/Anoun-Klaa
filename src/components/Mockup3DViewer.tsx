@@ -573,8 +573,8 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({
       <div ref={containerRef} className="w-full h-full" />
 
       {/* Top Left Minimal Subject HUD */}
-      <div className="absolute top-4 left-4 z-10 pointer-events-auto bg-white/90 backdrop-blur-sm border border-[#DCE2EE] px-3.5 py-2.5 shadow-sm">
-        <div className="font-mono text-[11px] font-semibold text-[#C9A227] uppercase tracking-wider">
+      <div className="absolute top-4 left-4 z-10 pointer-events-auto bg-white/95 backdrop-blur-md border border-[#E2E8F0] rounded-xl px-4 py-3 shadow-sm">
+        <div className="font-mono text-[11px] font-semibold text-[#B48A14] uppercase tracking-wider">
           Pratinjau 3D · 300 DPI {config.cmykSoftProof ? 'CMYK Soft-Proof' : 'Studio'}
         </div>
         <div className="font-display font-bold text-sm text-[#1F3864] mt-0.5">
@@ -590,7 +590,7 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({
       {/* WebGL Context Lost / Loading Overlay */}
       {(contextLost || isLoadingTex) && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#DFE5F0]/80 pointer-events-none">
-          <div className="bg-white border border-[#DCE2EE] px-4 py-2.5 font-mono text-xs text-[#1F3864]">
+          <div className="bg-white border border-[#E2E8F0] rounded-xl shadow-md px-4 py-3 font-mono text-xs text-[#1F3864]">
             {contextLost ? 'Memulihkan konteks WebGL 3D...' : 'Merender tekstur 300 DPI kartu depan & belakang...'}
           </div>
         </div>
@@ -598,9 +598,9 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({
 
       {/* Bottom Floating Control Dock (Collapsible) */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-auto max-w-[95%]">
-        <div className="bg-[#0F172A]/90 backdrop-blur-md border border-white/15 text-white px-3 py-2 shadow-xl">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-1.5">
+        <div className="bg-[#0F172A]/95 backdrop-blur-md border border-white/15 rounded-xl text-white p-2.5 shadow-xl">
+          <div className="flex items-center justify-between gap-2.5 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center gap-1 p-1 bg-white/5 border border-white/10 rounded-lg">
               {(
                 [
                   ['card', 'Kartu Jadi 360°'],
@@ -612,9 +612,9 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({
                   key={m}
                   type="button"
                   onClick={() => setViewMode(m)}
-                  className={`px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-all active:scale-[0.98] ${
                     viewMode === m
-                      ? 'bg-[#C9A227] text-[#0F172A] font-semibold'
+                      ? 'bg-[#C9A227] text-[#0F172A] font-semibold shadow-xs'
                       : 'text-slate-200 hover:bg-white/10'
                   }`}
                 >
@@ -623,11 +623,11 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({
               ))}
             </div>
 
-            <div className="flex items-center gap-1.5 border-l border-white/15 pl-2">
+            <div className="flex items-center gap-1.5 border-l border-white/15 pl-2.5">
               <button
                 type="button"
                 onClick={flipCardCamera}
-                className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 whitespace-nowrap"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/10 transition-all active:scale-[0.98] whitespace-nowrap"
               >
                 <FlipHorizontal2 className="w-3.5 h-3.5" />
                 Balik Depan/Belakang
@@ -635,7 +635,7 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({
               <button
                 type="button"
                 onClick={resetCamera}
-                className="p-1.5 text-slate-300 hover:text-white hover:bg-white/10"
+                className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/15 transition-all active:scale-[0.98]"
                 title="Reset kamera"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -643,7 +643,7 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({
               <button
                 type="button"
                 onClick={() => setDockCollapsed((c) => !c)}
-                className="p-1.5 text-slate-300 hover:text-white hover:bg-white/10"
+                className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/15 transition-all active:scale-[0.98]"
                 title={dockCollapsed ? 'Tampilkan detail' : 'Sembunyikan detail'}
               >
                 {dockCollapsed ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -652,7 +652,7 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({
           </div>
 
           {!dockCollapsed && (
-            <div className="mt-2 pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-[11px] text-slate-300">
+            <div className="mt-2 pt-2 px-1 border-t border-white/10 flex flex-wrap items-center justify-between gap-4 text-[11px] text-slate-300">
               {viewMode === 'bifold' ? (
                 <div className="flex items-center gap-3 flex-1 min-w-[240px]">
                   <span className="font-mono whitespace-nowrap text-[#EC4899]">
