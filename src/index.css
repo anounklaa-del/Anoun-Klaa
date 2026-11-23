@@ -25,17 +25,30 @@
   }
 }
 
-/* Native browser print overrides so only print sheets render cleanly at 1:1 mm */
+.print-only-root {
+  display: none;
+}
+
+/* Native browser print overrides so ALL selected print sheets render cleanly at 1:1 mm scale */
 @media print {
+  html,
+  body {
+    width: auto !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .screen-only,
   .no-print {
     display: none !important;
   }
-  .print-only-container {
-    padding: 0 !important;
+  .print-only-root {
+    display: block !important;
+    zoom: 1 !important;
     margin: 0 !important;
-    overflow: visible !important;
-    height: auto !important;
-    background: transparent !important;
+    padding: 0 !important;
   }
   .print-sheet-page {
     box-shadow: none !important;
