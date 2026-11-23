@@ -1,5 +1,5 @@
 import React from 'react';
-import { LOGO_LEFT_DATA_URI, type StudentRecord } from '../data/pasData';
+import { LOGO_RIGHT_DATA_URI, type StudentRecord } from '../data/pasData';
 import type { PrepressConfig, SeatingConfig } from '../types/prepress';
 import {
   formatParticipantNo,
@@ -620,9 +620,9 @@ function SeatingPageMarkup({
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '2.5mm', minWidth: 0 }}>
           <img
-            src={LOGO_LEFT_DATA_URI}
-            alt="Logo SMAN 1 Alalak"
-            style={{ height: '10.5mm', width: 'auto', flexShrink: 0 }}
+            src={LOGO_RIGHT_DATA_URI}
+            alt="Lambang Sekolah SMAN 1 Alalak"
+            style={{ height: '11mm', width: 'auto', objectFit: 'contain', flexShrink: 0 }}
           />
           <div style={{ minWidth: 0, lineHeight: 1.2 }}>
             <div
@@ -650,10 +650,7 @@ function SeatingPageMarkup({
                 marginTop: '0.25mm',
               }}
             >
-              {isPanitia
-                ? 'DOKUMEN KONTROL & ARSIP PANITIA UJIAN'
-                : 'VERSI TEMPEL PINTU / DINDING KELAS'}
-              {' · '}
+              {isPanitia ? 'DOKUMEN KONTROL & ARSIP PANITIA UJIAN · ' : null}
               <span style={{ fontWeight: 400, color: '#475569' }}>
                 {isPerKelas
                   ? `Denah Per Kelas (${roomPlan.classLabel ?? ''})`
