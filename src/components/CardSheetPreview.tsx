@@ -16,6 +16,7 @@ interface CardSheetPreviewProps {
   students: StudentRecord[];
   config: PrepressConfig;
   selectedStudent: StudentRecord;
+  deskLookup?: Record<string, string>;
   sheetIndex: number;
   onSheetIndexChange: (idx: number) => void;
   onSelectStudent: (student: StudentRecord) => void;
@@ -27,6 +28,7 @@ export const CardSheetPreview: React.FC<CardSheetPreviewProps> = ({
   students,
   config,
   selectedStudent,
+  deskLookup,
   sheetIndex,
   onSheetIndexChange,
   onSelectStudent,
@@ -208,6 +210,7 @@ export const CardSheetPreview: React.FC<CardSheetPreviewProps> = ({
               config={config}
               geo={geo}
               sheetIndices={[safeSheetIdx]}
+              deskLookup={deskLookup}
               selectedStudentNo={selectedStudent.no}
               onSelectStudent={onSelectStudent}
             />

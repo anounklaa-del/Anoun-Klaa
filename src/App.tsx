@@ -4,7 +4,9 @@ import {
   Box,
   FolderArchive,
   LayoutGrid,
+  MapPin,
   Printer,
+  QrCode,
   Tag,
   Upload,
   UserPlus,
@@ -17,6 +19,9 @@ import { ExportArchivePanel } from './components/ExportArchivePanel';
 import { Mockup3DViewer } from './components/Mockup3DViewer';
 import { SheetPagesBlock } from './components/PrintSheetRenderer';
 import { ProductionDocsPanel } from './components/ProductionDocsPanel';
+import { QrCodeSvg } from './components/QrCodeSvg';
+import { SeatingSheetPagesBlock } from './components/SeatingPlanRenderer';
+import { SeatingPlanStudio } from './components/SeatingPlanStudio';
 import { StudentDataManager } from './components/StudentDataManager';
 import {
   SCHEDULES_PASTE_NOVEMBER,
@@ -27,6 +32,7 @@ import {
   computeSheetGeometry,
   computeStickerGeometry,
   DEFAULT_PREPRESS_CONFIG,
+  DEFAULT_SEATING_CONFIG,
   DEFAULT_STICKER_CONFIG,
   PAPER_DIMENSIONS,
   type CropMarkStyle,
@@ -35,10 +41,24 @@ import {
   type MainWorkspaceTab,
   type PaperPreset,
   type PrepressConfig,
+  type QrCornerPosition,
+  type QrPayloadFormat,
+  type SeatingConfig,
   type StickerConfig,
 } from './types/prepress';
 import { buildStructuredZipArchive } from './utils/archiveExporter';
-import { buildDeskStickers } from './utils/deskStickerBuilder';
+import {
+  buildDeskAssignmentLookup,
+  buildDeskStickers,
+  getSortedRoomList,
+  normalizeRoomLabel,
+} from './utils/deskStickerBuilder';
+import { formatStudentQrPayload, getQrSymbolData } from './utils/qrGenerator';
+import {
+  buildRoomSeatingPlans,
+  buildSeatingPages,
+  getSeatingPaperDimensions,
+} from './utils/seatingPlanBuilder';
 
 function triggerBlobDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -92,13 +112,24 @@ export default function App() {
     }
     return DEFAULT_STICKER_CONFIG;
   });
+  const [seatingConfig, setSeatingConfig] = useState<SeatingConfig>(() => {
+    try {
+      const saved = localStorage.getItem('pas_seating_cfg_v3');
+      if (saved) return { ...DEFAULT_SEATING_CONFIG, ...JSON.parse(saved) };
+    } catch {
+      // ignore storage failure
+    }
+    return DEFAULT_SEATING_CONFIG;
+  });
   const [activeTab, setActiveTab] = useState<MainWorkspaceTab>('studio');
   const [exportSubTab, setExportSubTab] = useState<'archive' | 'docs'>('archive');
   const [selectedStudentNo, setSelectedStudentNo] = useState<string>(STUDENTS_MASTER[0].no);
   const [sheetIndex, setSheetIndex] = useState<number>(0);
   const [stickerSheetIndex, setStickerSheetIndex] = useState<number>(0);
+  const [seatingPageIndex, setSeatingPageIndex] = useState<number>(0);
   const [printScope, setPrintScope] = useState<'all' | 'current'>('all');
   const [stickerPrintScope, setStickerPrintScope] = useState<'all' | 'current'>('all');
+  const [seatingPrintScope, setSeatingPrintScope] = useState<'all' | 'current'>('all');
   const [zipBusy, setZipBusy] = useState(false);
   const [csvFeedback, setCsvFeedback] = useState<string | null>(null);
   const pendingPrintRef = useRef(false);
@@ -129,6 +160,18 @@ export default function App() {
       const next = { ...prev, ...patch };
       try {
         localStorage.setItem('pas_sticker_cfg_v2', JSON.stringify(next));
+      } catch {
+        // ignore storage quota errors
+      }
+      return next;
+    });
+  };
+
+  const updateSeatingConfig = (patch: Partial<SeatingConfig>) => {
+    setSeatingConfig((prev) => {
+      const next = { ...prev, ...patch };
+      try {
+        localStorage.setItem('pas_seating_cfg_v3', JSON.stringify(next));
       } catch {
         // ignore storage quota errors
       }
@@ -172,17 +215,37 @@ export default function App() {
     () => [...new Set(students.map((s) => s.kelas))],
     [students],
   );
+  const roomList = useMemo(() => getSortedRoomList(students), [students]);
+
+  const deskLookup = useMemo(() => {
+    return Object.fromEntries(
+      Array.from(buildDeskAssignmentLookup(students, stickerConfig.groupingMode).entries()).map(
+        ([no, info]) => [no, info.mejaLabel],
+      ),
+    );
+  }, [students, stickerConfig.groupingMode]);
 
   const filteredStudents = useMemo(() => {
     const fromNum = config.noFrom ? Number(config.noFrom) : 0;
     const toNum = config.noTo ? Number(config.noTo) : 1e9;
     return students.filter((s) => {
       if (config.selectedClass && s.kelas !== config.selectedClass) return false;
+      if (config.selectedRoom && normalizeRoomLabel(s.ruang) !== config.selectedRoom) return false;
       const n = Number(s.no);
       if (!Number.isNaN(n) && (n < fromNum || n > toNum)) return false;
       return true;
     });
-  }, [students, config.selectedClass, config.noFrom, config.noTo]);
+  }, [students, config.selectedClass, config.selectedRoom, config.noFrom, config.noTo]);
+
+  const cardFilterDesc = useMemo(() => {
+    const parts: string[] = [];
+    if (config.selectedClass) parts.push(`Kelas ${config.selectedClass}`);
+    if (config.selectedRoom) parts.push(`RUANG ${config.selectedRoom}`);
+    if (config.noFrom || config.noTo) {
+      parts.push(`No. ${config.noFrom || '001'}–${config.noTo || 'akhir'}`);
+    }
+    return parts.join(' · ') || 'Semua Kartu Aktif';
+  }, [config.selectedClass, config.selectedRoom, config.noFrom, config.noTo]);
 
   const selectedStudent = useMemo(() => {
     return (
@@ -248,8 +311,40 @@ export default function App() {
     return Array.from({ length: totalStickerSheets }, (_, i) => i);
   }, [stickerPrintScope, safeStickerSheetIdx, totalStickerSheets]);
 
+  const seatingRoomPlans = useMemo(
+    () =>
+      buildRoomSeatingPlans(
+        students,
+        filteredStudents,
+        stickerConfig.groupingMode,
+        seatingConfig,
+        cardFilterDesc,
+      ),
+    [students, filteredStudents, stickerConfig.groupingMode, seatingConfig, cardFilterDesc],
+  );
+  const seatingPages = useMemo(
+    () => buildSeatingPages(seatingRoomPlans, seatingConfig.variant),
+    [seatingRoomPlans, seatingConfig.variant],
+  );
+  const safeSeatingPageIdx = Math.min(seatingPageIndex, Math.max(0, seatingPages.length - 1));
+  const printSeatingPages = useMemo(() => {
+    if (seatingPrintScope === 'current') {
+      return seatingPages[safeSeatingPageIdx] ? [seatingPages[safeSeatingPageIdx]] : [];
+    }
+    return seatingPages;
+  }, [seatingPages, seatingPrintScope, safeSeatingPageIdx]);
+
+  const seatingDims = useMemo(
+    () => getSeatingPaperDimensions(config, seatingConfig.paperOrientation),
+    [config, seatingConfig.paperOrientation],
+  );
+
   const totalPrintPages =
-    activeTab === 'sticker' ? printStickerIndices.length : totalCardPrintPages;
+    activeTab === 'sticker'
+      ? printStickerIndices.length
+      : activeTab === 'seating'
+        ? printSeatingPages.length
+        : totalCardPrintPages;
 
   const missingScheduleCount = useMemo(
     () => filteredStudents.filter((s) => !SCHEDULES_PASTE_NOVEMBER[s.kelas]).length,
@@ -264,7 +359,20 @@ export default function App() {
       window.print();
     });
     return () => cancelAnimationFrame(timer);
-  }, [printScope, stickerPrintScope, safeSheetIdx, safeStickerSheetIdx, filteredStudents, filteredStickers, config, stickerConfig]);
+  }, [
+    printScope,
+    stickerPrintScope,
+    seatingPrintScope,
+    safeSheetIdx,
+    safeStickerSheetIdx,
+    safeSeatingPageIdx,
+    filteredStudents,
+    filteredStickers,
+    seatingPages,
+    config,
+    stickerConfig,
+    seatingConfig,
+  ]);
 
   const handleDirectPrint = (scopeOverride?: 'all' | 'current') => {
     const targetScope = scopeOverride ?? printScope;
@@ -281,6 +389,16 @@ export default function App() {
     if (targetScope !== stickerPrintScope) {
       pendingPrintRef.current = true;
       setStickerPrintScope(targetScope);
+    } else {
+      window.print();
+    }
+  };
+
+  const handleSeatingPrint = (scopeOverride?: 'all' | 'current') => {
+    const targetScope = scopeOverride ?? seatingPrintScope;
+    if (targetScope !== seatingPrintScope) {
+      pendingPrintRef.current = true;
+      setSeatingPrintScope(targetScope);
     } else {
       window.print();
     }
@@ -326,7 +444,13 @@ export default function App() {
     setZipBusy(true);
     try {
       const batch = filteredStudents.length > 0 ? filteredStudents : [selectedStudent];
-      const res = await buildStructuredZipArchive(batch, config);
+      const res = await buildStructuredZipArchive(
+        batch,
+        config,
+        undefined,
+        students,
+        stickerConfig.groupingMode,
+      );
       const slug = config.selectedClass
         ? config.selectedClass.replace(/\s+/g, '_')
         : `${batch.length}Siswa`;
@@ -339,15 +463,18 @@ export default function App() {
   const navItems: Array<{ id: MainWorkspaceTab; label: string; icon: React.ReactNode }> = [
     { id: 'studio', label: 'Kartu PAS', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
     { id: 'sticker', label: 'Stiker Meja', icon: <Tag className="w-3.5 h-3.5" /> },
+    { id: 'seating', label: 'Denah Ruang', icon: <MapPin className="w-3.5 h-3.5" /> },
     { id: 'students', label: 'Data Siswa', icon: <Users className="w-3.5 h-3.5" /> },
-    { id: 'mockup3d', label: 'Mockup 3D', icon: <Box className="w-3.5 h-3.5" /> },
     { id: 'export', label: 'Arsip & SOP', icon: <FolderArchive className="w-3.5 h-3.5" /> },
   ];
+
+  const activePageW = activeTab === 'seating' ? seatingDims.paperW : geo.paperW;
+  const activePageH = activeTab === 'seating' ? seatingDims.paperH : geo.paperH;
 
   return (
     <>
       {/* Dynamic @page physical dimensions for 1:1mm browser printing */}
-      <style>{`@page { size: ${geo.paperW}mm ${geo.paperH}mm; margin: 0; }`}</style>
+      <style>{`@page { size: ${activePageW}mm ${activePageH}mm; margin: 0; }`}</style>
 
       {/* Interactive Screen Application */}
       <div className="screen-only flex flex-col h-screen w-screen overflow-hidden bg-[#F3F5F9] text-[#131C31]">
@@ -370,7 +497,9 @@ export default function App() {
           <nav className="flex items-center gap-1 overflow-x-auto">
             {navItems.map((item) => {
               const active =
-                activeTab === item.id || (item.id === 'export' && activeTab === 'docs');
+                activeTab === item.id ||
+                (item.id === 'studio' && activeTab === 'mockup3d') ||
+                (item.id === 'export' && activeTab === 'docs');
               return (
                 <button
                   key={item.id}
@@ -393,19 +522,27 @@ export default function App() {
             <button
               type="button"
               onClick={() =>
-                activeTab === 'sticker' ? handleStickerPrint() : handleDirectPrint()
+                activeTab === 'sticker'
+                  ? handleStickerPrint()
+                  : activeTab === 'seating'
+                    ? handleSeatingPrint()
+                    : handleDirectPrint()
               }
               className="flex items-center gap-1.5 px-3.5 py-2 bg-[#C9A227] hover:bg-[#B58F1E] text-[#0F172A] text-xs font-bold whitespace-nowrap shrink-0"
               title={
                 activeTab === 'sticker'
                   ? `Cetak langsung ${totalPrintPages} halaman Stiker Meja`
-                  : `Cetak langsung ${totalPrintPages} halaman Kartu PAS`
+                  : activeTab === 'seating'
+                    ? `Cetak langsung ${totalPrintPages} halaman Denah Tempat Duduk`
+                    : `Cetak langsung ${totalPrintPages} halaman Kartu PAS`
               }
             >
               <Printer className="w-3.5 h-3.5" />
               {activeTab === 'sticker'
                 ? `Cetak Stiker (${totalPrintPages} Hal)`
-                : `Cetak (${totalPrintPages} Hal)`}
+                : activeTab === 'seating'
+                  ? `Cetak Denah (${totalPrintPages} Hal)`
+                  : `Cetak (${totalPrintPages} Hal)`}
             </button>
             <button
               type="button"
@@ -789,6 +926,23 @@ export default function App() {
                   ))}
                 </select>
 
+                <label className="block text-[#44546A] font-medium mb-1">Ruang Ujian</label>
+                <select
+                  value={config.selectedRoom}
+                  onChange={(e) => {
+                    updateConfig({ selectedRoom: e.target.value });
+                    setSheetIndex(0);
+                  }}
+                  className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2"
+                >
+                  <option value="">Semua Ruang ({roomList.length} ruang)</option>
+                  {roomList.map((r) => (
+                    <option key={r} value={r}>
+                      RUANG {r}
+                    </option>
+                  ))}
+                </select>
+
                 <div className="grid grid-cols-2 gap-2 mb-2.5">
                   <div>
                     <label className="block text-[#44546A] mb-0.5">No. dari</label>
@@ -824,7 +978,7 @@ export default function App() {
                 <select
                   value={selectedStudent.no}
                   onChange={(e) => setSelectedStudentNo(e.target.value)}
-                  className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-3"
+                  className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31] mb-2.5"
                 >
                   {filteredStudents.slice(0, 120).map((s) => (
                     <option key={s.no} value={s.no}>
@@ -832,6 +986,22 @@ export default function App() {
                     </option>
                   ))}
                 </select>
+
+                <label className="flex items-start gap-2 text-[#334155] mb-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={config.showDeskOnCard}
+                    onChange={(e) => updateConfig({ showDeskOnCard: e.target.checked })}
+                    className="accent-[#1F3864] mt-0.5"
+                  />
+                  <span>
+                    Sinkron No. Meja pada Kartu (
+                    <span className="font-mono text-[#1F3864]">
+                      {selectedStudent.ruang} ({deskLookup[selectedStudent.no] ?? 'MEJA 01'})
+                    </span>
+                    )
+                  </span>
+                </label>
 
                 <button
                   type="button"
@@ -859,6 +1029,128 @@ export default function App() {
                   <p className="text-[11px] text-[#B45309] mt-1.5 font-medium">
                     {missingScheduleCount} siswa memakai kelas di luar jadwal Paste November.
                   </p>
+                )}
+              </div>
+
+              {/* Section 3B: QR Code Absensi Digital (Sudut Kartu) */}
+              <div className="pt-4 border-t border-[#E2E8F0] space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-display font-bold text-[11px] uppercase tracking-wider text-[#64748B] flex items-center gap-1.5">
+                    <QrCode className="w-3.5 h-3.5 text-[#1F3864]" />
+                    Kode QR Absensi Ruang
+                  </h2>
+                  <label className="flex items-center gap-1.5 text-[11px] font-semibold text-[#1F3864] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.showQrCode}
+                      onChange={(e) => updateConfig({ showQrCode: e.target.checked })}
+                      className="accent-[#1F3864]"
+                    />
+                    Aktif
+                  </label>
+                </div>
+
+                {config.showQrCode && (
+                  <>
+                    <div>
+                      <label className="block text-[#44546A] font-medium mb-1">
+                        Posisi Sudut Kartu Ujian
+                      </label>
+                      <select
+                        value={config.qrCorner}
+                        onChange={(e) =>
+                          updateConfig({ qrCorner: e.target.value as QrCornerPosition })
+                        }
+                        className="w-full px-2.5 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                      >
+                        <option value="bottom_right">Sudut Kanan Bawah (Bawaan)</option>
+                        <option value="bottom_left">Sudut Kiri Bawah (+ Info Scan)</option>
+                        <option value="top_right">Sudut Kanan Atas (Header)</option>
+                        <option value="top_left">Sudut Kiri Atas (Header)</option>
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="col-span-2">
+                        <label className="block text-[#44546A] font-medium mb-1">
+                          Data Tersandi (Payload)
+                        </label>
+                        <select
+                          value={config.qrFormat}
+                          onChange={(e) =>
+                            updateConfig({ qrFormat: e.target.value as QrPayloadFormat })
+                          }
+                          className="w-full px-2 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
+                        >
+                          <option value="full_no">No. Peserta Lengkap</option>
+                          <option value="short_no">No. Urut Saja</option>
+                          <option value="json">JSON Lengkap Siswa</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[#44546A] font-medium mb-1">
+                          Ukuran mm
+                        </label>
+                        <input
+                          type="number"
+                          step="0.5"
+                          min="11"
+                          max="17"
+                          value={config.qrSizeMm}
+                          onChange={(e) =>
+                            updateConfig({
+                              qrSizeMm: Math.max(10.5, Math.min(17.5, Number(e.target.value) || 13.5)),
+                            })
+                          }
+                          className="w-full px-2 py-1.5 border border-[#CBD5E1] font-mono tabular-nums"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 bg-[#F8FAFC] border border-[#DCE2EE] flex items-center gap-3">
+                      <div className="w-14 h-14 p-1 bg-white border border-[#1F3864] shrink-0">
+                        <QrCodeSvg
+                          student={selectedStudent}
+                          format={config.qrFormat}
+                          mejaLabel={
+                            config.showDeskOnCard ? deskLookup[selectedStudent.no] : undefined
+                          }
+                          className="w-full h-full"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-[#1F3864] truncate">
+                          Uji Scan #{selectedStudent.no}
+                        </div>
+                        <div className="font-mono text-[10px] text-[#475569] break-all leading-tight mt-0.5">
+                          {formatStudentQrPayload(
+                            selectedStudent,
+                            config.qrFormat,
+                            config.showDeskOnCard ? deskLookup[selectedStudent.no] : undefined,
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const payload = formatStudentQrPayload(
+                              selectedStudent,
+                              config.qrFormat,
+                              config.showDeskOnCard ? deskLookup[selectedStudent.no] : undefined,
+                            );
+                            const sym = getQrSymbolData(payload);
+                            const svgStr = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${sym.viewBoxSize} ${sym.viewBoxSize}" width="240" height="240" shape-rendering="crispEdges"><rect width="${sym.viewBoxSize}" height="${sym.viewBoxSize}" fill="#FFFFFF"/><path d="${sym.pathData}" fill="#000000"/></svg>`;
+                            triggerBlobDownload(
+                              new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' }),
+                              `QR_Peserta_${selectedStudent.no}.svg`,
+                            );
+                          }}
+                          className="mt-1.5 text-[10px] font-semibold text-[#1F3864] underline hover:text-[#24407F]"
+                        >
+                          Unduh QR SVG ({selectedStudent.no})
+                        </button>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -902,17 +1194,61 @@ export default function App() {
           )}
 
           <main className="flex-1 min-w-0 h-full overflow-hidden">
-            {activeTab === 'studio' && (
-              <CardSheetPreview
-                students={filteredStudents}
-                config={config}
-                selectedStudent={selectedStudent}
-                sheetIndex={safeSheetIdx}
-                onSheetIndexChange={setSheetIndex}
-                onSelectStudent={(s) => setSelectedStudentNo(s.no)}
-                onConfigChange={updateConfig}
-                onPrintBatch={handleDirectPrint}
-              />
+            {(activeTab === 'studio' || activeTab === 'mockup3d') && (
+              <div className="flex flex-col h-full overflow-hidden">
+                <div className="no-print bg-white border-b border-[#DCE2EE] px-4 py-1.5 flex items-center justify-between gap-3 shrink-0">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('studio')}
+                      className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold border whitespace-nowrap ${
+                        activeTab === 'studio'
+                          ? 'bg-[#1F3864] text-white border-[#1F3864]'
+                          : 'bg-white text-[#44546A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
+                      }`}
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" />
+                      Lembar Cetak 2D
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('mockup3d')}
+                      className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold border whitespace-nowrap ${
+                        activeTab === 'mockup3d'
+                          ? 'bg-[#1F3864] text-white border-[#1F3864]'
+                          : 'bg-white text-[#44546A] border-[#CBD5E1] hover:bg-[#F8FAFC]'
+                      }`}
+                    >
+                      <Box className="w-3.5 h-3.5" />
+                      Pratinjau Mockup 3D
+                    </button>
+                  </div>
+                  <span className="font-mono text-[11px] text-[#64748B] truncate tabular-nums">
+                    Sampel aktif: #{selectedStudent.no} {selectedStudent.nama} ({selectedStudent.kelas})
+                  </span>
+                </div>
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  {activeTab === 'studio' ? (
+                    <CardSheetPreview
+                      students={filteredStudents}
+                      config={config}
+                      selectedStudent={selectedStudent}
+                      deskLookup={deskLookup}
+                      sheetIndex={safeSheetIdx}
+                      onSheetIndexChange={setSheetIndex}
+                      onSelectStudent={(s) => setSelectedStudentNo(s.no)}
+                      onConfigChange={updateConfig}
+                      onPrintBatch={handleDirectPrint}
+                    />
+                  ) : (
+                    <Mockup3DViewer
+                      student={selectedStudent}
+                      config={config}
+                      deskLabel={deskLookup[selectedStudent.no]}
+                    />
+                  )}
+                </div>
+              </div>
             )}
             {activeTab === 'sticker' && (
               <DeskStickerStudio
@@ -924,6 +1260,25 @@ export default function App() {
                 onPaperConfigChange={updateConfig}
                 onStickerConfigChange={updateStickerConfig}
                 onPrintStickers={handleStickerPrint}
+              />
+            )}
+            {activeTab === 'seating' && (
+              <SeatingPlanStudio
+                students={students}
+                filteredCardStudents={filteredStudents}
+                cardFilterDesc={cardFilterDesc}
+                groupingMode={stickerConfig.groupingMode}
+                paperConfig={config}
+                seatingConfig={seatingConfig}
+                pageIndex={safeSeatingPageIdx}
+                onPageIndexChange={setSeatingPageIndex}
+                onPaperConfigChange={updateConfig}
+                onSeatingConfigChange={updateSeatingConfig}
+                onPrintSeating={handleSeatingPrint}
+                onInspectStudentCard={(st) => {
+                  setSelectedStudentNo(st.no);
+                  setActiveTab('studio');
+                }}
               />
             )}
             {activeTab === 'students' && (
@@ -941,9 +1296,6 @@ export default function App() {
                 }}
                 csvFeedback={csvFeedback}
               />
-            )}
-            {activeTab === 'mockup3d' && (
-              <Mockup3DViewer student={selectedStudent} config={config} />
             )}
             {(activeTab === 'export' || activeTab === 'docs') && (
               <div className="flex flex-col h-full overflow-hidden">
@@ -986,6 +1338,7 @@ export default function App() {
                       allStudents={students}
                       selectedStudent={selectedStudent}
                       config={config}
+                      groupingMode={stickerConfig.groupingMode}
                       onConfigChange={updateConfig}
                     />
                   )}
@@ -1001,7 +1354,7 @@ export default function App() {
         className="print-only-root"
         style={{
           filter:
-            activeTab !== 'sticker' && config.cmykSoftProof
+            activeTab !== 'sticker' && activeTab !== 'seating' && config.cmykSoftProof
               ? 'contrast(0.95) saturate(0.92) sepia(0.04)'
               : undefined,
         }}
@@ -1016,15 +1369,25 @@ export default function App() {
                 forPrint
               />
             )
-          : filteredStudents.length > 0 && (
-              <SheetPagesBlock
-                students={filteredStudents}
-                config={config}
-                geo={geo}
-                sheetIndices={printSheetIndices}
-                isPrintDom
-              />
-            )}
+          : activeTab === 'seating'
+            ? printSeatingPages.length > 0 && (
+                <SeatingSheetPagesBlock
+                  pages={printSeatingPages}
+                  paperConfig={config}
+                  seatingConfig={seatingConfig}
+                  forPrint
+                />
+              )
+            : filteredStudents.length > 0 && (
+                <SheetPagesBlock
+                  students={filteredStudents}
+                  config={config}
+                  geo={geo}
+                  sheetIndices={printSheetIndices}
+                  deskLookup={deskLookup}
+                  isPrintDom
+                />
+              )}
       </div>
     </>
   );

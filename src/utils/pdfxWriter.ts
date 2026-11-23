@@ -3,6 +3,7 @@ import {
   computeSheetGeometry,
   type PrepressConfig,
   type SheetGeometry,
+  type StickerGroupingMode,
 } from '../types/prepress';
 import { renderBackCardCanvas, renderFrontCardCanvas } from './cardRenderer';
 import {
@@ -10,6 +11,7 @@ import {
   convertRgbaToCmykBytes,
   ICC_PROFILES,
 } from './cmykEngine';
+import { buildDeskAssignmentLookup } from './deskStickerBuilder';
 
 const MM_TO_PT = 72 / 25.4;
 const pt = (mm: number) => +(mm * MM_TO_PT).toFixed(3);
@@ -265,10 +267,20 @@ export async function generatePdfX1aDocument(
   cfg: PrepressConfig,
   onProgress?: (pct: number, label: string) => void,
   modeOverride?: PrepressConfig['imposition'],
+  deskLookup?: Record<string, string>,
+  groupingMode: StickerGroupingMode = 'tier_room',
 ): Promise<Uint8Array> {
   const effectiveCfg: PrepressConfig = modeOverride
     ? { ...cfg, imposition: modeOverride }
     : cfg;
+  const resolvedDeskLookup: Record<string, string> =
+    deskLookup ??
+    Object.fromEntries(
+      Array.from(buildDeskAssignmentLookup(students, groupingMode).entries()).map(([no, v]) => [
+        no,
+        v.mejaLabel,
+      ]),
+    );
   const geo = computeSheetGeometry(effectiveCfg);
   const iccMeta = ICC_PROFILES[effectiveCfg.iccProfile];
   const iccBytes = buildCmykIccProfile(effectiveCfg.iccProfile);
@@ -298,6 +310,10 @@ export async function generatePdfX1aDocument(
     dpi: effectiveCfg.dpi,
     softProof: false,
     iccProfile: effectiveCfg.iccProfile,
+    showQrCode: effectiveCfg.showQrCode,
+    qrCorner: effectiveCfg.qrCorner,
+    qrFormat: effectiveCfg.qrFormat,
+    qrSizeMm: effectiveCfg.qrSizeMm,
   };
 
   const getBackXObject = async (kelas: string): Promise<CmykXObject> => {
@@ -322,7 +338,11 @@ export async function generatePdfX1aDocument(
   };
 
   const makeFrontXObject = async (s: StudentRecord): Promise<CmykXObject> => {
-    const canvas = await renderFrontCardCanvas(s, renderOpts);
+    const canvas = await renderFrontCardCanvas(s, {
+      ...renderOpts,
+      showDeskOnCard: effectiveCfg.showDeskOnCard,
+      deskLabel: resolvedDeskLookup[s.no],
+    });
     const ctx = canvas.getContext('2d')!;
     const rgba = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     const cmyk = convertRgbaToCmykBytes(rgba, effectiveCfg.iccProfile);

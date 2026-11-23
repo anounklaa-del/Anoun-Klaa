@@ -10,7 +10,63 @@ export type MarginMode = 'auto' | 'manual';
 
 export type IccProfileId = 'FOGRA39' | 'GRACoL2006' | 'JapanColor2001';
 
-export type MainWorkspaceTab = 'studio' | 'sticker' | 'students' | 'mockup3d' | 'export' | 'docs';
+export type QrCornerPosition = 'bottom_right' | 'bottom_left' | 'top_right' | 'top_left';
+export type QrPayloadFormat = 'full_no' | 'short_no' | 'json';
+
+export type MainWorkspaceTab = 'studio' | 'sticker' | 'seating' | 'students' | 'mockup3d' | 'export' | 'docs';
+
+export type SeatingVariant = 'kelas' | 'panitia' | 'both';
+export type SeatingMode = 'student_card' | 'desk_combined' | 'per_kelas';
+export type SeatingClassGrouping = 'tier_per_room' | 'exact_class_per_room';
+export type SeatingDataSource = 'room' | 'card_filter';
+export type SeatingStudentOrder = 'desk_order' | 'card_order' | 'interleave_class';
+export type SeatingNumberingOrder = 'snake_col' | 'col_top' | 'row_left';
+export type SeatingOrientation = 'front_top' | 'front_bottom';
+export type SeatingDoorSide = 'left' | 'right';
+
+export interface SeatingConfig {
+  seatingMode: SeatingMode;
+  classGrouping: SeatingClassGrouping;
+  selectedClassTier: string;
+  dataSource: SeatingDataSource;
+  studentOrder: SeatingStudentOrder;
+  selectedRoom: string;
+  variant: SeatingVariant;
+  cols: number;
+  numberingOrder: SeatingNumberingOrder;
+  orientation: SeatingOrientation;
+  doorSide: SeatingDoorSide;
+  paperOrientation: 'portrait' | 'landscape';
+  marginMm: number;
+  showEmptyDesks: boolean;
+  showStudentNames: boolean;
+  showUserAndFullNo: boolean;
+  examTitle: string;
+  committeeChairName: string;
+  zoomPct: number;
+}
+
+export const DEFAULT_SEATING_CONFIG: SeatingConfig = {
+  seatingMode: 'student_card',
+  classGrouping: 'tier_per_room',
+  selectedClassTier: '',
+  dataSource: 'room',
+  studentOrder: 'desk_order',
+  selectedRoom: '',
+  variant: 'both',
+  cols: 6,
+  numberingOrder: 'snake_col',
+  orientation: 'front_top',
+  doorSide: 'left',
+  paperOrientation: 'portrait',
+  marginMm: 8,
+  showEmptyDesks: true,
+  showStudentNames: true,
+  showUserAndFullNo: true,
+  examTitle: 'PENILAIAN AKHIR SEMESTER (PAS) GANJIL 2026/2027',
+  committeeChairName: 'Panitia Pelaksana PAS SMAN 1 Alalak',
+  zoomPct: 56,
+};
 
 export type StickerGroupingMode = 'tier_room' | 'class_room';
 
@@ -92,6 +148,7 @@ export interface PrepressConfig {
   imposition: ImpositionMode;
   reverseBackOrder: boolean;
   selectedClass: string;
+  selectedRoom: string;
   noFrom: string;
   noTo: string;
   zoomPct: number;
@@ -99,6 +156,11 @@ export interface PrepressConfig {
   iccProfile: IccProfileId;
   cmykSoftProof: boolean;
   xrayAlignmentOverlay: boolean;
+  showQrCode: boolean;
+  qrCorner: QrCornerPosition;
+  qrFormat: QrPayloadFormat;
+  qrSizeMm: number;
+  showDeskOnCard: boolean;
 }
 
 export interface SheetGeometry {
@@ -183,6 +245,7 @@ export const DEFAULT_PREPRESS_CONFIG: PrepressConfig = {
   imposition: 'duplex',
   reverseBackOrder: false,
   selectedClass: '',
+  selectedRoom: '',
   noFrom: '',
   noTo: '',
   zoomPct: 58,
@@ -190,6 +253,11 @@ export const DEFAULT_PREPRESS_CONFIG: PrepressConfig = {
   iccProfile: 'FOGRA39',
   cmykSoftProof: false,
   xrayAlignmentOverlay: false,
+  showQrCode: true,
+  qrCorner: 'bottom_right',
+  qrFormat: 'full_no',
+  qrSizeMm: 13.5,
+  showDeskOnCard: true,
 };
 
 export function computeSheetGeometry(cfg: PrepressConfig): SheetGeometry {

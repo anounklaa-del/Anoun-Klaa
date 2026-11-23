@@ -10,6 +10,7 @@ import { renderBackCardCanvas, renderFrontCardCanvas } from '../utils/cardRender
 interface Mockup3DViewerProps {
   student: StudentRecord;
   config: PrepressConfig;
+  deskLabel?: string;
 }
 
 type MockupMode = 'card' | 'bifold' | 'bleedSheet';
@@ -103,7 +104,11 @@ function buildProofSheetOverlayCanvas(
   return out;
 }
 
-export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({ student, config }) => {
+export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({
+  student,
+  config,
+  deskLabel,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewMode, setViewMode] = useState<MockupMode>('card');
   const [foldAngleDeg, setFoldAngleDeg] = useState<number>(38);
@@ -426,6 +431,12 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({ student, config 
         dpi: 300,
         softProof: config.cmykSoftProof,
         iccProfile: config.iccProfile,
+        showQrCode: config.showQrCode,
+        qrCorner: config.qrCorner,
+        qrFormat: config.qrFormat,
+        qrSizeMm: config.qrSizeMm,
+        showDeskOnCard: config.showDeskOnCard,
+        deskLabel,
       });
       const backCanvas = renderBackCardCanvas(student.kelas, {
         cardW: config.cardW,
@@ -442,6 +453,12 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({ student, config 
         dpi: 300,
         softProof: config.cmykSoftProof,
         iccProfile: config.iccProfile,
+        showQrCode: config.showQrCode,
+        qrCorner: config.qrCorner,
+        qrFormat: config.qrFormat,
+        qrSizeMm: config.qrSizeMm,
+        showDeskOnCard: config.showDeskOnCard,
+        deskLabel,
       });
       const proofCanvas = buildProofSheetOverlayCanvas(
         frontWithBleed,
@@ -487,7 +504,20 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({ student, config 
     return () => {
       cancelled = true;
     };
-  }, [student, config.cardW, config.cardH, config.bleedMm, config.cmykSoftProof, config.iccProfile]);
+  }, [
+    student,
+    config.cardW,
+    config.cardH,
+    config.bleedMm,
+    config.cmykSoftProof,
+    config.iccProfile,
+    config.showQrCode,
+    config.qrCorner,
+    config.qrFormat,
+    config.qrSizeMm,
+    config.showDeskOnCard,
+    deskLabel,
+  ]);
 
   // Switch active 3D assembly & fold hinge angle cleanly
   useEffect(() => {
@@ -551,7 +581,9 @@ export const Mockup3DViewer: React.FC<Mockup3DViewerProps> = ({ student, config 
           #{student.no} — {student.nama}
         </div>
         <div className="font-mono text-xs text-[#44546A] tabular-nums">
-          Kelas {student.kelas} · Ruang {student.ruang} · {config.cardW} × {config.cardH} mm
+          Kelas {student.kelas} · Ruang {student.ruang}
+          {config.showDeskOnCard && deskLabel ? ` (${deskLabel})` : ''} · {config.cardW} ×{' '}
+          {config.cardH} mm
         </div>
       </div>
 

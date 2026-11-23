@@ -125,13 +125,17 @@ export function buildDeskStickers(
 export function buildDeskAssignmentLookup(
   students: StudentRecord[],
   groupingMode: StickerGroupingMode,
-): Map<string, { ruang: string; mejaLabel: string }> {
+): Map<string, { ruang: string; mejaNo: number; mejaLabel: string }> {
   const stickers = buildDeskStickers(students, groupingMode);
-  const map = new Map<string, { ruang: string; mejaLabel: string }>();
+  const map = new Map<string, { ruang: string; mejaNo: number; mejaLabel: string }>();
   for (const st of stickers) {
     for (const slot of st.slots) {
       if (slot.student) {
-        map.set(slot.student.no, { ruang: st.ruang, mejaLabel: st.mejaLabel });
+        map.set(slot.student.no, {
+          ruang: st.ruang,
+          mejaNo: st.mejaNo,
+          mejaLabel: st.mejaLabel,
+        });
       }
     }
   }

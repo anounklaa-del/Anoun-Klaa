@@ -5,7 +5,14 @@ import {
   SCHEDULES_PASTE_NOVEMBER,
   type StudentRecord,
 } from '../data/pasData';
-import type { PrepressConfig, SheetGeometry } from '../types/prepress';
+import type {
+  PrepressConfig,
+  QrCornerPosition,
+  QrPayloadFormat,
+  SheetGeometry,
+} from '../types/prepress';
+import { computeFrontCardLayout, formatStudentQrPayload } from '../utils/qrGenerator';
+import { QrCodeSvg } from './QrCodeSvg';
 
 export function FrontCardMarkup({
   student,
@@ -14,6 +21,12 @@ export function FrontCardMarkup({
   w,
   h,
   bleed,
+  showQrCode = true,
+  qrCorner = 'bottom_right',
+  qrFormat = 'full_no',
+  qrSizeMm = 13.5,
+  showDeskOnCard = true,
+  deskLabel,
   onClick,
   isSelected,
 }: {
@@ -23,9 +36,69 @@ export function FrontCardMarkup({
   w: number;
   h: number;
   bleed: number;
+  showQrCode?: boolean;
+  qrCorner?: QrCornerPosition;
+  qrFormat?: QrPayloadFormat;
+  qrSizeMm?: number;
+  showDeskOnCard?: boolean;
+  deskLabel?: string;
   onClick?: () => void;
   isSelected?: boolean;
 }) {
+  const layout = computeFrontCardLayout(w, h, {
+    showQrCode,
+    qrCorner,
+    qrSizeMm,
+  });
+  const activeDeskLabel = showDeskOnCard ? deskLabel : undefined;
+  const qrPayload = formatStudentQrPayload(student, qrFormat, activeDeskLabel);
+  const qrInHeader = Boolean(layout.qr && (qrCorner === 'top_left' || qrCorner === 'top_right'));
+  const qrInBody = Boolean(layout.qr && (qrCorner === 'bottom_left' || qrCorner === 'bottom_right'));
+
+  const qrBoxNode = layout.qr ? (
+    <div
+      style={{
+        position: 'absolute',
+        left: `${layout.qr.x - layout.ix}mm`,
+        top: `${layout.qr.y - (qrInHeader ? layout.iy : layout.bodyY)}mm`,
+        width: `${layout.qr.w}mm`,
+        height: `${layout.qr.h}mm`,
+        border: '0.24mm solid #1F3864',
+        background: '#FFFFFF',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        zIndex: 3,
+      }}
+    >
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <QrCodeSvg
+          payloadOverride={qrPayload}
+          style={{
+            width: `${Math.min(layout.qr.w, layout.qr.h - layout.qr.labelH) - 0.3}mm`,
+            height: `${Math.min(layout.qr.w, layout.qr.h - layout.qr.labelH) - 0.3}mm`,
+          }}
+        />
+      </div>
+      <div
+        style={{
+          height: `${layout.qr.labelH}mm`,
+          flex: 'none',
+          background: '#1F3864',
+          color: '#FFFFFF',
+          fontSize: qrInHeader ? '3.5pt' : '4pt',
+          fontWeight: 700,
+          letterSpacing: '0.15mm',
+          lineHeight: `${layout.qr.labelH}mm`,
+          textAlign: 'center',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        ABSENSI QR
+      </div>
+    </div>
+  ) : null;
+
   return (
     <div
       onClick={onClick}
@@ -69,35 +142,54 @@ export function FrontCardMarkup({
           zIndex: 1,
         }}
       >
+        {/* Header */}
         <div
           style={{
-            height: '15mm',
+            position: 'relative',
+            height: `${layout.hdH}mm`,
             flex: 'none',
             display: 'flex',
             alignItems: 'center',
-            gap: '1.5mm',
-            padding: '0 2mm',
+            gap: '1.2mm',
+            paddingLeft:
+              qrInHeader && qrCorner === 'top_left' && layout.qr
+                ? `${layout.qr.w + 2.8}mm`
+                : '2mm',
+            paddingRight:
+              qrInHeader && qrCorner === 'top_right' && layout.qr
+                ? `${layout.qr.w + 2.8}mm`
+                : '2mm',
             borderBottom: '0.8mm solid #C9A227',
           }}
         >
-          <img src={LOGO_LEFT_DATA_URI} alt="" style={{ height: '11.5mm', width: 'auto' }} />
-          <div style={{ flex: 1, textAlign: 'center', lineHeight: 1.2 }}>
-            <div style={{ fontSize: '7.5pt', fontWeight: 700, color: '#1F3864' }}>
+          {qrInHeader && qrBoxNode}
+          <img
+            src={LOGO_LEFT_DATA_URI}
+            alt=""
+            style={{ height: `${layout.logoLeft.h}mm`, width: 'auto', flexShrink: 0 }}
+          />
+          <div style={{ flex: 1, textAlign: 'center', lineHeight: 1.2, minWidth: 0 }}>
+            <div style={{ fontSize: qrInHeader ? '6.6pt' : '7.5pt', fontWeight: 700, color: '#1F3864', whiteSpace: 'nowrap' }}>
               PAS (PENILAIAN AKHIR SEMESTER)
             </div>
-            <div style={{ fontSize: '14pt', fontWeight: 700, color: '#24407F' }}>
+            <div style={{ fontSize: qrInHeader ? '12.2pt' : '14pt', fontWeight: 700, color: '#24407F', whiteSpace: 'nowrap' }}>
               SMAN 1 ALALAK
             </div>
-            <div style={{ fontSize: '7pt', color: '#44546A' }}>
+            <div style={{ fontSize: qrInHeader ? '6.4pt' : '7pt', color: '#44546A', whiteSpace: 'nowrap' }}>
               TAHUN AJARAN 2026-2027
             </div>
           </div>
-          <img src={LOGO_RIGHT_DATA_URI} alt="" style={{ height: '10mm', width: 'auto' }} />
+          <img
+            src={LOGO_RIGHT_DATA_URI}
+            alt=""
+            style={{ height: `${layout.logoRight.h}mm`, width: 'auto', flexShrink: 0 }}
+          />
         </div>
 
+        {/* Navy Band */}
         <div
           style={{
-            height: '6mm',
+            height: `${layout.bandH}mm`,
             flex: 'none',
             background: '#1F3864',
             color: '#fff',
@@ -105,51 +197,62 @@ export function FrontCardMarkup({
             fontWeight: 700,
             fontSize: '10.5pt',
             letterSpacing: '0.9mm',
-            lineHeight: '6mm',
+            lineHeight: `${layout.bandH}mm`,
             whiteSpace: 'nowrap',
           }}
         >
           KARTU UJIAN PAS
         </div>
 
+        {/* Body */}
         <div
           style={{
+            position: 'relative',
             flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '2mm',
-            padding: '0 2.5mm',
+            minHeight: 0,
           }}
         >
-          <div style={{ flex: 1, minWidth: 0 }}>
-            {(
-              [
-                ['NO. PESERTA', `2026/SMAN 1 ALALAK/${student.no}`, false],
-                ['NAMA', student.nama, student.nama.length > 24],
-                ['KELAS', student.kelas, false],
-                ['RUANG', student.ruang, false],
-                ['USER NAME', student.user, false],
-              ] as Array<[string, string, boolean]>
-            ).map(([label, val, sm]) => (
+          {(
+            [
+              ['NO. PESERTA', `2026/SMAN 1 ALALAK/${student.no}`, false],
+              ['NAMA', student.nama, student.nama.length > 24],
+              ['KELAS', student.kelas, false],
+              ['RUANG', activeDeskLabel ? `${student.ruang} (${activeDeskLabel})` : student.ruang, false],
+              ['USER NAME', student.user, false],
+            ] as Array<[string, string, boolean]>
+          ).map(([label, val, sm], idx) => {
+            const topMm = layout.rows.startCenterY - layout.bodyY - layout.rows.pitch / 2 + idx * layout.rows.pitch;
+            const maxW = layout.rows.maxValueEndX - layout.rows.valueX;
+            return (
               <div
                 key={label}
-                style={{ display: 'flex', lineHeight: '5.2mm', whiteSpace: 'nowrap' }}
+                style={{
+                  position: 'absolute',
+                  left: `${layout.rows.labelX - layout.ix}mm`,
+                  top: `${topMm}mm`,
+                  height: `${layout.rows.pitch}mm`,
+                  width: `${layout.rows.maxValueEndX - layout.rows.labelX}mm`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  whiteSpace: 'nowrap',
+                }}
               >
                 <span
                   style={{
                     width: '21mm',
                     flex: 'none',
-                    fontSize: '7pt',
+                    fontSize: layout.rows.pitch < 4.7 ? '6.6pt' : '7pt',
                     fontWeight: 700,
                     color: '#44546A',
                   }}
                 >
                   {label}
                 </span>
-                <span style={{ width: '2.5mm', flex: 'none', color: '#44546A' }}>:</span>
+                <span style={{ width: '2.3mm', flex: 'none', color: '#44546A' }}>:</span>
                 <strong
                   style={{
-                    fontSize: sm ? '8pt' : '9.5pt',
+                    fontSize: sm ? '7.8pt' : layout.rows.pitch < 4.7 ? '8.8pt' : '9.5pt',
+                    maxWidth: `${maxW}mm`,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                   }}
@@ -157,22 +260,30 @@ export function FrontCardMarkup({
                   {val}
                 </strong>
               </div>
-            ))}
-          </div>
+            );
+          })}
 
+          {/* Photo Slot */}
           <div
             style={{
-              width: '20mm',
-              height: '30mm',
-              flex: 'none',
+              position: 'absolute',
+              left: `${layout.photo.x - layout.ix}mm`,
+              top: `${layout.photo.y - layout.bodyY}mm`,
+              width: `${layout.photo.w}mm`,
+              height: `${layout.photo.h}mm`,
               border: '0.25mm dashed #9aa5bd',
               background: '#f5f7fb',
-              position: 'relative',
             }}
           >
             <svg
               viewBox="0 0 40 46"
-              style={{ position: 'absolute', left: '3mm', top: '6mm', width: '14mm', height: '16mm' }}
+              style={{
+                position: 'absolute',
+                left: `${layout.photo.w * 0.16}mm`,
+                top: `${layout.photo.h * 0.16}mm`,
+                width: `${layout.photo.w * 0.68}mm`,
+                height: `${layout.photo.h * 0.54}mm`,
+              }}
             >
               <circle cx="20" cy="14" r="9" fill="none" stroke="#c3cadb" strokeWidth="2.4" />
               <path
@@ -185,9 +296,9 @@ export function FrontCardMarkup({
             <span
               style={{
                 position: 'absolute',
-                right: '1mm',
-                bottom: '0.8mm',
-                fontSize: '5.5pt',
+                right: '0.9mm',
+                bottom: '0.7mm',
+                fontSize: layout.photo.w < 16 ? '4.6pt' : '5.5pt',
                 fontWeight: 700,
                 color: '#7a869f',
               }}
@@ -195,18 +306,52 @@ export function FrontCardMarkup({
               FOTO 2x3
             </span>
           </div>
+
+          {qrInBody && qrBoxNode}
+
+          {qrInBody && qrCorner === 'bottom_left' && layout.qr && (
+            <div
+              style={{
+                position: 'absolute',
+                left: `${layout.qr.x - layout.ix + layout.qr.w + 2.2}mm`,
+                top: `${layout.qr.y - layout.bodyY + 1.2}mm`,
+                width: `${layout.photo.x - (layout.qr.x + layout.qr.w + 3.5)}mm`,
+                lineHeight: 1.25,
+              }}
+            >
+              <div style={{ fontSize: '5.5pt', fontWeight: 700, color: '#1F3864' }}>
+                SCAN QR ABSENSI RUANG
+              </div>
+              <div
+                style={{
+                  fontSize: '5pt',
+                  fontFamily: 'monospace',
+                  color: '#44546A',
+                  marginTop: '0.5mm',
+                  wordBreak: 'break-all',
+                }}
+              >
+                2026/SMAN 1 ALALAK/{student.no}
+              </div>
+              <div style={{ fontSize: '4.8pt', color: '#64748B', marginTop: '0.4mm' }}>
+                Ruang {student.ruang}
+                {activeDeskLabel ? ` · ${activeDeskLabel}` : ''} · {student.kelas}
+              </div>
+            </div>
+          )}
         </div>
 
+        {/* Footer */}
         <div
           style={{
-            height: '5mm',
+            height: `${layout.ftH}mm`,
             flex: 'none',
             background: '#E9EEF7',
             color: '#44546A',
             fontStyle: 'italic',
             fontSize: '7pt',
             textAlign: 'center',
-            lineHeight: '5mm',
+            lineHeight: `${layout.ftH}mm`,
           }}
         >
           Kartu ini wajib dibawa selama ujian berlangsung
@@ -616,6 +761,7 @@ export const SheetPagesBlock: React.FC<{
   config: PrepressConfig;
   geo: SheetGeometry;
   sheetIndices: number[];
+  deskLookup?: Record<string, string>;
   selectedStudentNo?: string;
   onSelectStudent?: (s: StudentRecord) => void;
   isPrintDom?: boolean;
@@ -624,6 +770,7 @@ export const SheetPagesBlock: React.FC<{
   config,
   geo,
   sheetIndices,
+  deskLookup,
   selectedStudentNo,
   onSelectStudent,
   isPrintDom = false,
@@ -717,6 +864,12 @@ export const SheetPagesBlock: React.FC<{
                       w={geo.cardW}
                       h={geo.cardH}
                       bleed={config.bleedMm}
+                      showQrCode={config.showQrCode}
+                      qrCorner={config.qrCorner}
+                      qrFormat={config.qrFormat}
+                      qrSizeMm={config.qrSizeMm}
+                      showDeskOnCard={config.showDeskOnCard}
+                      deskLabel={deskLookup?.[st.no]}
                       isSelected={!isPrintDom && st.no === selectedStudentNo}
                       onClick={onSelectStudent ? () => onSelectStudent(st) : undefined}
                     />
@@ -757,6 +910,12 @@ export const SheetPagesBlock: React.FC<{
                         w={geo.cardW}
                         h={geo.cardH}
                         bleed={config.bleedMm}
+                        showQrCode={config.showQrCode}
+                        qrCorner={config.qrCorner}
+                        qrFormat={config.qrFormat}
+                        qrSizeMm={config.qrSizeMm}
+                        showDeskOnCard={config.showDeskOnCard}
+                        deskLabel={deskLookup?.[st.no]}
                         isSelected={!isPrintDom && st.no === selectedStudentNo}
                         onClick={onSelectStudent ? () => onSelectStudent(st) : undefined}
                       />

@@ -14,7 +14,11 @@ import {
   STUDENTS_MASTER,
   type StudentRecord,
 } from '../data/pasData';
-import { computeSheetGeometry, type PrepressConfig } from '../types/prepress';
+import {
+  computeSheetGeometry,
+  type PrepressConfig,
+  type StickerGroupingMode,
+} from '../types/prepress';
 import {
   buildStructuredZipArchive,
   computeEfficiencyMetrics,
@@ -23,6 +27,7 @@ import {
   generateStandalonePasteNovHtml,
 } from '../utils/archiveExporter';
 import { buildCmykIccProfile, ICC_PROFILES } from '../utils/cmykEngine';
+import { buildDeskAssignmentLookup } from '../utils/deskStickerBuilder';
 import { generatePdfX1aDocument } from '../utils/pdfxWriter';
 
 interface ExportArchivePanelProps {
@@ -30,6 +35,7 @@ interface ExportArchivePanelProps {
   allStudents?: StudentRecord[];
   selectedStudent: StudentRecord;
   config: PrepressConfig;
+  groupingMode?: StickerGroupingMode;
   onConfigChange: (patch: Partial<PrepressConfig>) => void;
 }
 
@@ -49,6 +55,7 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
   allStudents,
   selectedStudent,
   config,
+  groupingMode = 'tier_room',
   onConfigChange,
 }) => {
   const [busyTask, setBusyTask] = useState<string | null>(null);
@@ -72,6 +79,15 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
 
   const activeStudents = filteredStudents.length > 0 ? filteredStudents : [selectedStudent];
   const iccMeta = ICC_PROFILES[config.iccProfile];
+  const deskLookup = useMemo(() => {
+    const source = allStudents ?? filteredStudents;
+    return Object.fromEntries(
+      Array.from(buildDeskAssignmentLookup(source, groupingMode).entries()).map(([no, v]) => [
+        no,
+        v.mejaLabel,
+      ]),
+    );
+  }, [allStudents, filteredStudents, groupingMode]);
 
   const handleExportPdfx = async (modeOverride?: PrepressConfig['imposition']) => {
     try {
@@ -87,6 +103,8 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
           setProgressMsg(msg);
         },
         modeOverride,
+        deskLookup,
+        groupingMode,
       );
       const fname =
         modeOverride === 'calibration'
@@ -101,7 +119,12 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
   };
 
   const handleDownloadLayeredSvg = (side: 'front' | 'back' | 'foldable') => {
-    const svg = generateLayeredCardSvg(selectedStudent, side, config);
+    const svg = generateLayeredCardSvg(
+      selectedStudent,
+      side,
+      config,
+      deskLookup[selectedStudent.no],
+    );
     const fname = `Kartu_PAS_${selectedStudent.no}_${side}_Berlapis_Bleed${config.bleedMm}mm.svg`;
     triggerDownload(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }), fname);
   };
@@ -115,7 +138,11 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
   };
 
   const handleDownloadStandaloneHtml = () => {
-    const html = generateStandalonePasteNovHtml(allStudents ?? STUDENTS_MASTER);
+    const html = generateStandalonePasteNovHtml(
+      allStudents ?? STUDENTS_MASTER,
+      deskLookup,
+      config.showDeskOnCard,
+    );
     triggerDownload(
       new Blob([html], { type: 'text/html;charset=utf-8' }),
       'Cetak_Kartu_Ujian_PAS_Paste_November.html',
@@ -127,10 +154,16 @@ export const ExportArchivePanel: React.FC<ExportArchivePanelProps> = ({
       setBusyTask('zip');
       setProgressPct(2);
       setProgressMsg('Memulai pengemasan arsip terstruktur...');
-      const res = await buildStructuredZipArchive(activeStudents, config, (pct, msg) => {
-        setProgressPct(pct);
-        setProgressMsg(msg);
-      });
+      const res = await buildStructuredZipArchive(
+        activeStudents,
+        config,
+        (pct, msg) => {
+          setProgressPct(pct);
+          setProgressMsg(msg);
+        },
+        allStudents ?? STUDENTS_MASTER,
+        groupingMode,
+      );
       setLastZipReport({
         zipKb: Math.round(res.actualZipSizeBytes / 1024),
         pdfKb: Math.round(res.pdfSizeBytes / 1024),

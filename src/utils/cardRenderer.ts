@@ -4,8 +4,13 @@ import {
   SCHEDULES_PASTE_NOVEMBER,
   type StudentRecord,
 } from '../data/pasData';
-import type { IccProfileId } from '../types/prepress';
+import type { IccProfileId, QrCornerPosition, QrPayloadFormat } from '../types/prepress';
 import { applySoftProofToCanvas } from './cmykEngine';
+import {
+  computeFrontCardLayout,
+  drawQrCodeOnCanvas,
+  formatStudentQrPayload,
+} from './qrGenerator';
 
 const MM_TO_INCH = 1 / 25.4;
 
@@ -17,6 +22,12 @@ export interface CardRenderOptions {
   softProof?: boolean;
   iccProfile?: IccProfileId;
   foldEdge?: 'none' | 'top' | 'bottom';
+  showQrCode?: boolean;
+  qrCorner?: QrCornerPosition;
+  qrFormat?: QrPayloadFormat;
+  qrSizeMm?: number;
+  showDeskOnCard?: boolean;
+  deskLabel?: string;
 }
 
 let cachedLogos: Promise<[HTMLImageElement, HTMLImageElement]> | null = null;
@@ -41,7 +52,8 @@ export function getLoadedLogos(): Promise<[HTMLImageElement, HTMLImageElement]> 
 }
 
 /**
- * Renders the Front Card (Kartu Ujian PAS) onto a Canvas at true >=300 DPI with optional 3mm outer bleed extension.
+ * Renders the Front Card (Kartu Ujian PAS) onto a Canvas at true >=300 DPI with optional 3mm outer bleed extension
+ * and corner QR Code for digital exam room attendance.
  */
 export async function renderFrontCardCanvas(
   student: StudentRecord,
@@ -59,36 +71,34 @@ export async function renderFrontCardCanvas(
   const mm = (v: number) => v * pxPerMm;
   const bx = opts.bleedMm;
   const by = opts.bleedMm;
-  const w = opts.cardW;
-  const h = opts.cardH;
+
+  const layout = computeFrontCardLayout(opts.cardW, opts.cardH, {
+    showQrCode: opts.showQrCode ?? true,
+    qrCorner: opts.qrCorner ?? 'bottom_right',
+    qrSizeMm: opts.qrSizeMm ?? 13.5,
+  });
 
   // Full bleed background white paper
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Extend subtle perimeter tint / band colors into 3mm bleed so edge cuts never leave white hairline
-  // Card outer padding matches original 1.25mm trim margin
-  const pad = 1.25;
-  const ix = bx + pad;
-  const iy = by + pad;
-  const iw = w - pad * 2;
-  const ih = h - pad * 2;
-
-  // Header & Band coordinates inside trim
-  const hdH = 15;
-  const bandH = 6;
-  const ftH = 5;
+  const ix = bx + layout.ix;
+  const iy = by + layout.iy;
+  const iw = layout.iw;
+  const ih = layout.ih;
+  const hdH = layout.hdH;
+  const bandH = layout.bandH;
+  const ftH = layout.ftH;
+  const bodyY = by + layout.bodyY;
 
   // Bleed extension strips for full-bleed band & footer edges
   if (opts.bleedMm > 0) {
-    // Extend navy band edge cleanly across left/right bleed so edge trim is crisp
     ctx.fillStyle = '#1F3864';
     ctx.fillRect(0, mm(iy + hdH), mm(ix + 0.5), mm(bandH));
-    ctx.fillRect(mm(ix + iw - 0.5), mm(iy + hdH), mm(opts.bleedMm + pad + 1), mm(bandH));
-    // Extend footer tint into left/right bleed
+    ctx.fillRect(mm(ix + iw - 0.5), mm(iy + hdH), mm(opts.bleedMm + layout.pad + 1), mm(bandH));
     ctx.fillStyle = '#E9EEF7';
-    ctx.fillRect(0, mm(iy + ih - ftH), mm(ix + 0.5), mm(ftH + pad + opts.bleedMm));
-    ctx.fillRect(mm(ix + iw - 0.5), mm(iy + ih - ftH), mm(opts.bleedMm + pad + 1), mm(ftH + pad + opts.bleedMm));
+    ctx.fillRect(0, mm(iy + ih - ftH), mm(ix + 0.5), mm(ftH + layout.pad + opts.bleedMm));
+    ctx.fillRect(mm(ix + iw - 0.5), mm(iy + ih - ftH), mm(opts.bleedMm + layout.pad + 1), mm(ftH + layout.pad + opts.bleedMm));
   }
 
   // Inner card white surface
@@ -96,29 +106,36 @@ export async function renderFrontCardCanvas(
   ctx.fillRect(mm(ix), mm(iy), mm(iw), mm(ih));
 
   // Header Logos
-  const lg1H = 11.5;
+  const lg1H = layout.logoLeft.h;
   const lg1W = (logoL.width / Math.max(1, logoL.height)) * lg1H;
-  ctx.drawImage(logoL, mm(ix + 2), mm(iy + (hdH - lg1H) / 2), mm(lg1W), mm(lg1H));
+  ctx.drawImage(logoL, mm(bx + layout.logoLeft.x), mm(by + layout.logoLeft.y), mm(lg1W), mm(lg1H));
 
-  const lg2H = 10;
+  const lg2H = layout.logoRight.h;
   const lg2W = (logoR.width / Math.max(1, logoR.height)) * lg2H;
-  ctx.drawImage(logoR, mm(ix + iw - 2 - lg2W), mm(iy + (hdH - lg2H) / 2), mm(lg2W), mm(lg2H));
+  const lg2X =
+    layout.qr && layout.qr.corner === 'top_right'
+      ? bx + layout.qr.x - 1.4 - lg2W
+      : bx + layout.ix + layout.iw - 2.0 - lg2W;
+  ctx.drawImage(logoR, mm(lg2X), mm(by + layout.logoRight.y), mm(lg2W), mm(lg2H));
 
   // Header Title
-  const textCenterX = mm(ix + iw / 2);
+  const qrInHeader = Boolean(
+    layout.qr && (layout.qr.corner === 'top_left' || layout.qr.corner === 'top_right'),
+  );
+  const textCenterX = mm(bx + layout.headerTextCenterX);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
   ctx.fillStyle = '#1F3864';
-  ctx.font = `700 ${mm(2.65)}px Arial, Helvetica, sans-serif`;
+  ctx.font = `700 ${mm(qrInHeader ? 2.33 : 2.65)}px Arial, Helvetica, sans-serif`;
   ctx.fillText('PAS (PENILAIAN AKHIR SEMESTER)', textCenterX, mm(iy + 3.4));
 
   ctx.fillStyle = '#24407F';
-  ctx.font = `700 ${mm(4.94)}px Arial, Helvetica, sans-serif`;
+  ctx.font = `700 ${mm(qrInHeader ? 4.3 : 4.94)}px Arial, Helvetica, sans-serif`;
   ctx.fillText('SMAN 1 ALALAK', textCenterX, mm(iy + 7.9));
 
   ctx.fillStyle = '#44546A';
-  ctx.font = `400 ${mm(2.47)}px Arial, Helvetica, sans-serif`;
+  ctx.font = `400 ${mm(qrInHeader ? 2.25 : 2.47)}px Arial, Helvetica, sans-serif`;
   ctx.fillText('TAHUN AJARAN 2026-2027', textCenterX, mm(iy + 12.1));
 
   // Gold Divider Line below Header
@@ -132,45 +149,47 @@ export async function renderFrontCardCanvas(
   ctx.font = `700 ${mm(3.65)}px Arial, Helvetica, sans-serif`;
   ctx.fillText('KARTU UJIAN PAS', mm(ix + iw / 2), mm(iy + hdH + bandH / 2 + 0.1));
 
-  // Body Info Rows & Photo Slot
-  const bodyY = iy + hdH + bandH;
-  const bodyH = ih - hdH - bandH - ftH;
-  const phW = 20;
-  const phH = 30;
-  const phX = ix + iw - 2.5 - phW;
-  const phY = bodyY + (bodyH - phH) / 2;
-
   // Student info rows
+  const activeDeskLabel = (opts.showDeskOnCard ?? true) ? opts.deskLabel : undefined;
   const fields: Array<[string, string, boolean?]> = [
     ['NO. PESERTA', `2026/SMAN 1 ALALAK/${student.no}`, false],
     ['NAMA', student.nama, student.nama.length > 24],
     ['KELAS', student.kelas, false],
-    ['RUANG', student.ruang, false],
+    ['RUANG', activeDeskLabel ? `${student.ruang} (${activeDeskLabel})` : student.ruang, false],
     ['USER NAME', student.user, false],
   ];
-  const startRowY = bodyY + (bodyH - fields.length * 5.2) / 2 + 2.6;
 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   fields.forEach(([label, value, compact], idx) => {
-    const ry = startRowY + idx * 5.2;
+    const ry = by + layout.rows.startCenterY + idx * layout.rows.pitch;
     ctx.fillStyle = '#44546A';
-    ctx.font = `700 ${mm(2.47)}px Arial, Helvetica, sans-serif`;
-    ctx.fillText(label, mm(ix + 2.5), mm(ry));
-    ctx.fillText(':', mm(ix + 23.5), mm(ry));
+    ctx.font = `700 ${mm(layout.rows.pitch < 4.7 ? 2.3 : 2.47)}px Arial, Helvetica, sans-serif`;
+    ctx.fillText(label, mm(bx + layout.rows.labelX), mm(ry));
+    ctx.fillText(':', mm(bx + layout.rows.colonX), mm(ry));
 
     ctx.fillStyle = '#000000';
-    ctx.font = `700 ${mm(compact ? 2.82 : 3.35)}px Arial, Helvetica, sans-serif`;
-    // Clip value cleanly before photo box
+    const valFontMm = compact ? 2.75 : layout.rows.pitch < 4.7 ? 3.05 : 3.35;
+    ctx.font = `700 ${mm(valFontMm)}px Arial, Helvetica, sans-serif`;
     ctx.save();
     ctx.beginPath();
-    ctx.rect(mm(ix + 25.5), mm(ry - 2.6), mm(phX - (ix + 26.8)), mm(5.2));
+    ctx.rect(
+      mm(bx + layout.rows.valueX),
+      mm(ry - layout.rows.pitch / 2),
+      mm(layout.rows.maxValueEndX - layout.rows.valueX),
+      mm(layout.rows.pitch),
+    );
     ctx.clip();
-    ctx.fillText(value, mm(ix + 26.0), mm(ry));
+    ctx.fillText(value, mm(bx + layout.rows.valueX), mm(ry));
     ctx.restore();
   });
 
   // Photo box (2x3)
+  const phX = bx + layout.photo.x;
+  const phY = by + layout.photo.y;
+  const phW = layout.photo.w;
+  const phH = layout.photo.h;
+
   ctx.fillStyle = '#F5F7FB';
   ctx.fillRect(mm(phX), mm(phY), mm(phW), mm(phH));
   ctx.save();
@@ -180,36 +199,72 @@ export async function renderFrontCardCanvas(
   ctx.strokeRect(mm(phX), mm(phY), mm(phW), mm(phH));
   ctx.restore();
 
-  // Photo silhouette icon
+  // Photo silhouette icon proportional to photo box
+  const scaleIcon = phW / 20;
   ctx.strokeStyle = '#C3CADB';
-  ctx.lineWidth = mm(0.8);
+  ctx.lineWidth = mm(0.75 * scaleIcon);
   ctx.beginPath();
-  ctx.arc(mm(phX + phW / 2), mm(phY + 10.8), mm(3.2), 0, Math.PI * 2);
+  ctx.arc(mm(phX + phW / 2), mm(phY + 10.8 * scaleIcon), mm(3.2 * scaleIcon), 0, Math.PI * 2);
   ctx.stroke();
   ctx.beginPath();
-  ctx.moveTo(mm(phX + 4.1), mm(phY + 21.8));
+  ctx.moveTo(mm(phX + 4.1 * scaleIcon), mm(phY + 21.8 * scaleIcon));
   ctx.bezierCurveTo(
-    mm(phX + 4.1),
-    mm(phY + 16.7),
-    mm(phX + 7.2),
-    mm(phY + 15.2),
+    mm(phX + 4.1 * scaleIcon),
+    mm(phY + 16.7 * scaleIcon),
+    mm(phX + 7.2 * scaleIcon),
+    mm(phY + 15.2 * scaleIcon),
     mm(phX + phW / 2),
-    mm(phY + 15.2),
+    mm(phY + 15.2 * scaleIcon),
   );
   ctx.bezierCurveTo(
-    mm(phX + phW - 7.2),
-    mm(phY + 15.2),
-    mm(phX + phW - 4.1),
-    mm(phY + 16.7),
-    mm(phX + phW - 4.1),
-    mm(phY + 21.8),
+    mm(phX + phW - 7.2 * scaleIcon),
+    mm(phY + 15.2 * scaleIcon),
+    mm(phX + phW - 4.1 * scaleIcon),
+    mm(phY + 16.7 * scaleIcon),
+    mm(phX + phW - 4.1 * scaleIcon),
+    mm(phY + 21.8 * scaleIcon),
   );
   ctx.stroke();
 
   ctx.fillStyle = '#7A869F';
   ctx.textAlign = 'right';
-  ctx.font = `700 ${mm(1.94)}px Arial, Helvetica, sans-serif`;
-  ctx.fillText('FOTO 2x3', mm(phX + phW - 1.1), mm(phY + phH - 1.6));
+  ctx.font = `700 ${mm(phW < 16 ? 1.62 : 1.94)}px Arial, Helvetica, sans-serif`;
+  ctx.fillText('FOTO 2x3', mm(phX + phW - 0.9), mm(phY + phH - 1.3));
+
+  // QR Code Corner Placement (Digital Exam Room Attendance)
+  if (layout.qr) {
+    const qrPayload = formatStudentQrPayload(student, opts.qrFormat ?? 'full_no', activeDeskLabel);
+    drawQrCodeOnCanvas(
+      ctx,
+      qrPayload,
+      mm(bx + layout.qr.x),
+      mm(by + layout.qr.y),
+      mm(layout.qr.w),
+      mm(layout.qr.h),
+      'ABSENSI QR',
+    );
+
+    if (layout.qr.corner === 'bottom_left') {
+      const noteX = bx + layout.qr.x + layout.qr.w + 2.2;
+      const noteTop = by + layout.qr.y + 1.8;
+      ctx.save();
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#1F3864';
+      ctx.font = `700 ${mm(1.94)}px Arial, Helvetica, sans-serif`;
+      ctx.fillText('SCAN QR ABSENSI RUANG', mm(noteX), mm(noteTop));
+      ctx.fillStyle = '#44546A';
+      ctx.font = `400 ${mm(1.76)}px "Courier New", monospace`;
+      ctx.fillText(`2026/SMAN 1 ALALAK/${student.no}`, mm(noteX), mm(noteTop + 2.7));
+      ctx.fillStyle = '#64748B';
+      ctx.font = `400 ${mm(1.7)}px Arial, Helvetica, sans-serif`;
+      ctx.fillText(
+        `Ruang ${student.ruang}${activeDeskLabel ? ` · ${activeDeskLabel}` : ''} · ${student.kelas}`,
+        mm(noteX),
+        mm(noteTop + 5.1),
+      );
+      ctx.restore();
+    }
+  }
 
   // Footer
   ctx.fillStyle = '#E9EEF7';
