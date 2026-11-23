@@ -580,6 +580,7 @@ function SeatingPageMarkup({
 
   const isFrontTop = seatingConfig.orientation === 'front_top';
   const isPanitia = mode === 'panitia';
+  const showSchoolHeader = seatingConfig.showSchoolHeader !== false;
   const isSpaciousPerKelas = isPerKelas && grid.cols <= 5 && grid.rows <= 7;
   const isDenseDeskGrid = grid.cols >= 5 || grid.rows >= 7 || (isPanitia && grid.rows >= 6);
 
@@ -613,41 +614,67 @@ function SeatingPageMarkup({
           alignItems: 'center',
           justifyContent: 'space-between',
           gap: '3mm',
-          paddingBottom: '1.8mm',
-          borderBottom: '0.8mm solid #C9A227',
+          paddingBottom: showSchoolHeader ? '1.8mm' : '1.2mm',
+          borderBottom: showSchoolHeader ? '0.8mm solid #C9A227' : '0.4mm solid #CBD5E1',
           flexShrink: 0,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2.5mm', minWidth: 0 }}>
-          <img
-            src={LOGO_RIGHT_DATA_URI}
-            alt="Lambang Sekolah SMAN 1 Alalak"
-            style={{ height: '11mm', width: 'auto', objectFit: 'contain', flexShrink: 0 }}
-          />
+        {showSchoolHeader ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '2.5mm', minWidth: 0 }}>
+            <img
+              src={LOGO_RIGHT_DATA_URI}
+              alt="Lambang Sekolah SMAN 1 Alalak"
+              style={{ height: '11mm', width: 'auto', objectFit: 'contain', flexShrink: 0 }}
+            />
+            <div style={{ minWidth: 0, lineHeight: 1.2 }}>
+              <div
+                style={{
+                  fontSize: '6.8pt',
+                  fontWeight: 700,
+                  color: '#44546A',
+                  letterSpacing: '0.25mm',
+                }}
+              >
+                {isPerKelas
+                  ? 'TEMPAT DUDUK PESERTA PENILAIAN SUMATIF · SEMESTER GANJIL'
+                  : seatingConfig.examTitle}
+              </div>
+              <div style={{ fontSize: '11pt', fontWeight: 800, color: '#1F3864' }}>
+                {isPerKelas
+                  ? 'SMAN 1 ALALAK TAHUN AJARAN 2026-2027'
+                  : 'SMA NEGERI 1 ALALAK · DENAH TEMPAT DUDUK SISWA'}
+              </div>
+              <div
+                style={{
+                  fontSize: '6.8pt',
+                  fontWeight: 700,
+                  color: isPanitia ? '#92400E' : '#1F3864',
+                  marginTop: '0.25mm',
+                }}
+              >
+                {isPanitia ? 'DOKUMEN KONTROL & ARSIP PANITIA UJIAN · ' : null}
+                <span style={{ fontWeight: 400, color: '#475569' }}>
+                  {isPerKelas
+                    ? `Denah Per Kelas (${roomPlan.classLabel ?? ''})`
+                    : isStudentCardMode
+                      ? 'Format Kartu Siswa (1 Kursi = 1 Kartu)'
+                      : 'Format Meja Gabungan'}{' '}
+                  · {describeNumberingOrder(seatingConfig.numberingOrder)} ({grid.cols}×{grid.rows})
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
           <div style={{ minWidth: 0, lineHeight: 1.2 }}>
-            <div
-              style={{
-                fontSize: '6.8pt',
-                fontWeight: 700,
-                color: '#44546A',
-                letterSpacing: '0.25mm',
-              }}
-            >
-              {isPerKelas
-                ? 'TEMPAT DUDUK PESERTA PENILAIAN SUMATIF · SEMESTER GANJIL'
-                : seatingConfig.examTitle}
-            </div>
-            <div style={{ fontSize: '11pt', fontWeight: 800, color: '#1F3864' }}>
-              {isPerKelas
-                ? 'SMAN 1 ALALAK TAHUN AJARAN 2026-2027'
-                : 'SMA NEGERI 1 ALALAK · DENAH TEMPAT DUDUK SISWA'}
+            <div style={{ fontSize: '9.5pt', fontWeight: 800, color: '#1F3864' }}>
+              DENAH TEMPAT DUDUK {isPerKelas && roomPlan.classLabel ? `· ${roomPlan.classLabel}` : 'PESERTA'}
             </div>
             <div
               style={{
-                fontSize: '6.8pt',
+                fontSize: '6.6pt',
                 fontWeight: 700,
-                color: isPanitia ? '#92400E' : '#1F3864',
-                marginTop: '0.25mm',
+                color: isPanitia ? '#92400E' : '#475569',
+                marginTop: '0.2mm',
               }}
             >
               {isPanitia ? 'DOKUMEN KONTROL & ARSIP PANITIA UJIAN · ' : null}
@@ -661,7 +688,7 @@ function SeatingPageMarkup({
               </span>
             </div>
           </div>
-        </div>
+        )}
 
         <div
           style={{

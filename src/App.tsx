@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Archive,
   Box,
+  ClipboardCheck,
   FolderArchive,
   LayoutGrid,
   MapPin,
@@ -12,6 +13,8 @@ import {
   UserPlus,
   Users,
 } from 'lucide-react';
+import { AttendanceSheetPagesBlock } from './components/AttendanceSheetRenderer';
+import { AttendanceSheetStudio } from './components/AttendanceSheetStudio';
 import { CardSheetPreview } from './components/CardSheetPreview';
 import { StickerSheetPagesBlock } from './components/DeskStickerRenderer';
 import { DeskStickerStudio } from './components/DeskStickerStudio';
@@ -31,10 +34,12 @@ import {
 import {
   computeSheetGeometry,
   computeStickerGeometry,
+  DEFAULT_ATTENDANCE_CONFIG,
   DEFAULT_PREPRESS_CONFIG,
   DEFAULT_SEATING_CONFIG,
   DEFAULT_STICKER_CONFIG,
   PAPER_DIMENSIONS,
+  type AttendanceConfig,
   type CropMarkStyle,
   type FlipMode,
   type ImpositionMode,
@@ -47,6 +52,7 @@ import {
   type StickerConfig,
 } from './types/prepress';
 import { buildStructuredZipArchive } from './utils/archiveExporter';
+import { buildAttendancePages } from './utils/attendanceBuilder';
 import {
   buildDeskAssignmentLookup,
   buildDeskStickers,
@@ -121,15 +127,26 @@ export default function App() {
     }
     return DEFAULT_SEATING_CONFIG;
   });
+  const [attendanceConfig, setAttendanceConfig] = useState<AttendanceConfig>(() => {
+    try {
+      const saved = localStorage.getItem('pas_attendance_cfg_v3');
+      if (saved) return { ...DEFAULT_ATTENDANCE_CONFIG, ...JSON.parse(saved) };
+    } catch {
+      // ignore storage failure
+    }
+    return DEFAULT_ATTENDANCE_CONFIG;
+  });
   const [activeTab, setActiveTab] = useState<MainWorkspaceTab>('studio');
   const [exportSubTab, setExportSubTab] = useState<'archive' | 'docs'>('archive');
   const [selectedStudentNo, setSelectedStudentNo] = useState<string>(STUDENTS_MASTER[0].no);
   const [sheetIndex, setSheetIndex] = useState<number>(0);
   const [stickerSheetIndex, setStickerSheetIndex] = useState<number>(0);
   const [seatingPageIndex, setSeatingPageIndex] = useState<number>(0);
+  const [attendancePageIndex, setAttendancePageIndex] = useState<number>(0);
   const [printScope, setPrintScope] = useState<'all' | 'current'>('all');
   const [stickerPrintScope, setStickerPrintScope] = useState<'all' | 'current'>('all');
   const [seatingPrintScope, setSeatingPrintScope] = useState<'all' | 'current'>('all');
+  const [attendancePrintScope, setAttendancePrintScope] = useState<'all' | 'current'>('all');
   const [zipBusy, setZipBusy] = useState(false);
   const [csvFeedback, setCsvFeedback] = useState<string | null>(null);
   const pendingPrintRef = useRef(false);
@@ -172,6 +189,18 @@ export default function App() {
       const next = { ...prev, ...patch };
       try {
         localStorage.setItem('pas_seating_cfg_v3', JSON.stringify(next));
+      } catch {
+        // ignore storage quota errors
+      }
+      return next;
+    });
+  };
+
+  const updateAttendanceConfig = (patch: Partial<AttendanceConfig>) => {
+    setAttendanceConfig((prev) => {
+      const next = { ...prev, ...patch };
+      try {
+        localStorage.setItem('pas_attendance_cfg_v3', JSON.stringify(next));
       } catch {
         // ignore storage quota errors
       }
@@ -339,12 +368,45 @@ export default function App() {
     [config, seatingConfig.paperOrientation],
   );
 
+  const attendanceResult = useMemo(
+    () =>
+      buildAttendancePages(
+        students,
+        filteredStudents,
+        stickerConfig.groupingMode,
+        config,
+        attendanceConfig,
+        cardFilterDesc,
+      ),
+    [students, filteredStudents, stickerConfig.groupingMode, config, attendanceConfig, cardFilterDesc],
+  );
+  const attendancePages = attendanceResult.pages;
+  const safeAttendancePageIdx = Math.min(
+    attendancePageIndex,
+    Math.max(0, attendancePages.length - 1),
+  );
+  const printAttendancePages = useMemo(() => {
+    if (attendancePrintScope === 'current') {
+      return attendancePages[safeAttendancePageIdx]
+        ? [attendancePages[safeAttendancePageIdx]]
+        : [];
+    }
+    return attendancePages;
+  }, [attendancePages, attendancePrintScope, safeAttendancePageIdx]);
+
+  const attendanceDims = useMemo(
+    () => getSeatingPaperDimensions(config, attendanceConfig.paperOrientation),
+    [config, attendanceConfig.paperOrientation],
+  );
+
   const totalPrintPages =
     activeTab === 'sticker'
       ? printStickerIndices.length
       : activeTab === 'seating'
         ? printSeatingPages.length
-        : totalCardPrintPages;
+        : activeTab === 'attendance'
+          ? printAttendancePages.length
+          : totalCardPrintPages;
 
   const missingScheduleCount = useMemo(
     () => filteredStudents.filter((s) => !SCHEDULES_PASTE_NOVEMBER[s.kelas]).length,
@@ -363,15 +425,19 @@ export default function App() {
     printScope,
     stickerPrintScope,
     seatingPrintScope,
+    attendancePrintScope,
     safeSheetIdx,
     safeStickerSheetIdx,
     safeSeatingPageIdx,
+    safeAttendancePageIdx,
     filteredStudents,
     filteredStickers,
     seatingPages,
+    attendancePages,
     config,
     stickerConfig,
     seatingConfig,
+    attendanceConfig,
   ]);
 
   const handleDirectPrint = (scopeOverride?: 'all' | 'current') => {
@@ -399,6 +465,16 @@ export default function App() {
     if (targetScope !== seatingPrintScope) {
       pendingPrintRef.current = true;
       setSeatingPrintScope(targetScope);
+    } else {
+      window.print();
+    }
+  };
+
+  const handleAttendancePrint = (scopeOverride?: 'all' | 'current') => {
+    const targetScope = scopeOverride ?? attendancePrintScope;
+    if (targetScope !== attendancePrintScope) {
+      pendingPrintRef.current = true;
+      setAttendancePrintScope(targetScope);
     } else {
       window.print();
     }
@@ -464,12 +540,23 @@ export default function App() {
     { id: 'studio', label: 'Kartu PAS', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
     { id: 'sticker', label: 'Stiker Meja', icon: <Tag className="w-3.5 h-3.5" /> },
     { id: 'seating', label: 'Denah Ruang', icon: <MapPin className="w-3.5 h-3.5" /> },
+    { id: 'attendance', label: 'Daftar Hadir', icon: <ClipboardCheck className="w-3.5 h-3.5" /> },
     { id: 'students', label: 'Data Siswa', icon: <Users className="w-3.5 h-3.5" /> },
     { id: 'export', label: 'Arsip & SOP', icon: <FolderArchive className="w-3.5 h-3.5" /> },
   ];
 
-  const activePageW = activeTab === 'seating' ? seatingDims.paperW : geo.paperW;
-  const activePageH = activeTab === 'seating' ? seatingDims.paperH : geo.paperH;
+  const activePageW =
+    activeTab === 'seating'
+      ? seatingDims.paperW
+      : activeTab === 'attendance'
+        ? attendanceDims.paperW
+        : geo.paperW;
+  const activePageH =
+    activeTab === 'seating'
+      ? seatingDims.paperH
+      : activeTab === 'attendance'
+        ? attendanceDims.paperH
+        : geo.paperH;
 
   return (
     <>
@@ -526,7 +613,9 @@ export default function App() {
                   ? handleStickerPrint()
                   : activeTab === 'seating'
                     ? handleSeatingPrint()
-                    : handleDirectPrint()
+                    : activeTab === 'attendance'
+                      ? handleAttendancePrint()
+                      : handleDirectPrint()
               }
               className="flex items-center gap-1.5 px-3.5 py-2 bg-[#C9A227] hover:bg-[#B58F1E] text-[#0F172A] text-xs font-bold whitespace-nowrap shrink-0"
               title={
@@ -534,7 +623,9 @@ export default function App() {
                   ? `Cetak langsung ${totalPrintPages} halaman Stiker Meja`
                   : activeTab === 'seating'
                     ? `Cetak langsung ${totalPrintPages} halaman Denah Tempat Duduk`
-                    : `Cetak langsung ${totalPrintPages} halaman Kartu PAS`
+                    : activeTab === 'attendance'
+                      ? `Cetak langsung ${totalPrintPages} halaman Daftar Hadir Peserta`
+                      : `Cetak langsung ${totalPrintPages} halaman Kartu PAS`
               }
             >
               <Printer className="w-3.5 h-3.5" />
@@ -542,7 +633,9 @@ export default function App() {
                 ? `Cetak Stiker (${totalPrintPages} Hal)`
                 : activeTab === 'seating'
                   ? `Cetak Denah (${totalPrintPages} Hal)`
-                  : `Cetak (${totalPrintPages} Hal)`}
+                  : activeTab === 'attendance'
+                    ? `Cetak Absen (${totalPrintPages} Hal)`
+                    : `Cetak (${totalPrintPages} Hal)`}
             </button>
             <button
               type="button"
@@ -1281,6 +1374,21 @@ export default function App() {
                 }}
               />
             )}
+            {activeTab === 'attendance' && (
+              <AttendanceSheetStudio
+                students={students}
+                filteredCardStudents={filteredStudents}
+                cardFilterDesc={cardFilterDesc}
+                groupingMode={stickerConfig.groupingMode}
+                paperConfig={config}
+                attendanceConfig={attendanceConfig}
+                pageIndex={safeAttendancePageIdx}
+                onPageIndexChange={setAttendancePageIndex}
+                onPaperConfigChange={updateConfig}
+                onAttendanceConfigChange={updateAttendanceConfig}
+                onPrintAttendance={handleAttendancePrint}
+              />
+            )}
             {activeTab === 'students' && (
               <StudentDataManager
                 students={students}
@@ -1354,7 +1462,10 @@ export default function App() {
         className="print-only-root"
         style={{
           filter:
-            activeTab !== 'sticker' && activeTab !== 'seating' && config.cmykSoftProof
+            activeTab !== 'sticker' &&
+            activeTab !== 'seating' &&
+            activeTab !== 'attendance' &&
+            config.cmykSoftProof
               ? 'contrast(0.95) saturate(0.92) sepia(0.04)'
               : undefined,
         }}
@@ -1378,16 +1489,25 @@ export default function App() {
                   forPrint
                 />
               )
-            : filteredStudents.length > 0 && (
-                <SheetPagesBlock
-                  students={filteredStudents}
-                  config={config}
-                  geo={geo}
-                  sheetIndices={printSheetIndices}
-                  deskLookup={deskLookup}
-                  isPrintDom
-                />
-              )}
+            : activeTab === 'attendance'
+              ? printAttendancePages.length > 0 && (
+                  <AttendanceSheetPagesBlock
+                    pages={printAttendancePages}
+                    paperConfig={config}
+                    attendanceConfig={attendanceConfig}
+                    forPrint
+                  />
+                )
+              : filteredStudents.length > 0 && (
+                  <SheetPagesBlock
+                    students={filteredStudents}
+                    config={config}
+                    geo={geo}
+                    sheetIndices={printSheetIndices}
+                    deskLookup={deskLookup}
+                    isPrintDom
+                  />
+                )}
       </div>
     </>
   );

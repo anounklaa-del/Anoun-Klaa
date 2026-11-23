@@ -13,7 +13,15 @@ export type IccProfileId = 'FOGRA39' | 'GRACoL2006' | 'JapanColor2001';
 export type QrCornerPosition = 'bottom_right' | 'bottom_left' | 'top_right' | 'top_left';
 export type QrPayloadFormat = 'full_no' | 'short_no' | 'json';
 
-export type MainWorkspaceTab = 'studio' | 'sticker' | 'seating' | 'students' | 'mockup3d' | 'export' | 'docs';
+export type MainWorkspaceTab =
+  | 'studio'
+  | 'sticker'
+  | 'seating'
+  | 'attendance'
+  | 'students'
+  | 'mockup3d'
+  | 'export'
+  | 'docs';
 
 export type SeatingVariant = 'kelas' | 'panitia' | 'both';
 export type SeatingMode = 'student_card' | 'desk_combined' | 'per_kelas';
@@ -41,6 +49,7 @@ export interface SeatingConfig {
   showEmptyDesks: boolean;
   showStudentNames: boolean;
   showUserAndFullNo: boolean;
+  showSchoolHeader: boolean;
   examTitle: string;
   committeeChairName: string;
   zoomPct: number;
@@ -63,9 +72,67 @@ export const DEFAULT_SEATING_CONFIG: SeatingConfig = {
   showEmptyDesks: true,
   showStudentNames: true,
   showUserAndFullNo: true,
+  showSchoolHeader: true,
   examTitle: 'PENILAIAN AKHIR SEMESTER (PAS) GANJIL 2026/2027',
   committeeChairName: 'Panitia Pelaksana PAS SMAN 1 Alalak',
   zoomPct: 56,
+};
+
+export type AttendanceGroupingMode = 'per_ruang' | 'per_ruang_jenjang' | 'per_kelas' | 'card_filter';
+export type AttendanceOrderMode = 'no_peserta' | 'meja_order' | 'nama_alpha';
+
+export interface AttendanceConfig {
+  groupingMode: AttendanceGroupingMode;
+  selectedRoom: string;
+  selectedClass: string;
+  orderMode: AttendanceOrderMode;
+  rowsPerPage: 'fit_group' | 'auto' | 20 | 25 | 30 | 35;
+  paperOrientation: 'portrait' | 'landscape';
+  marginMm: number;
+  showSchoolHeader: boolean;
+  showFullParticipantNo: boolean;
+  showDeskAndRoomCol: boolean;
+  showNotesCol: boolean;
+  showSummaryAndSignatures: boolean;
+  twoProctors: boolean;
+  examTitle: string;
+  academicYear: string;
+  subjectName: string;
+  examDate: string;
+  examTime: string;
+  proctor1Name: string;
+  proctor2Name: string;
+  committeeChairName: string;
+  committeeChairNip: string;
+  cityLabel: string;
+  zoomPct: number;
+}
+
+export const DEFAULT_ATTENDANCE_CONFIG: AttendanceConfig = {
+  groupingMode: 'per_ruang',
+  selectedRoom: '',
+  selectedClass: '',
+  orderMode: 'no_peserta',
+  rowsPerPage: 'fit_group',
+  paperOrientation: 'portrait',
+  marginMm: 8,
+  showSchoolHeader: true,
+  showFullParticipantNo: true,
+  showDeskAndRoomCol: true,
+  showNotesCol: true,
+  showSummaryAndSignatures: true,
+  twoProctors: false,
+  examTitle: 'PENILAIAN AKHIR SEMESTER (PAS) GANJIL',
+  academicYear: '2026/2027',
+  subjectName: '',
+  examDate: '',
+  examTime: '',
+  proctor1Name: '',
+  proctor2Name: '',
+  committeeChairName: 'Ketua Panitia PAS SMAN 1 Alalak',
+  committeeChairNip: '',
+  cityLabel: 'Alalak',
+  zoomPct: 58,
 };
 
 export type StickerGroupingMode = 'tier_room' | 'class_room';

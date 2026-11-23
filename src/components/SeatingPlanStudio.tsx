@@ -441,14 +441,50 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
               />
               Tampilkan kotak {isStudentCardMode ? 'kursi' : 'meja'} cadangan / kosong
             </label>
+            <label className="flex items-center gap-2 text-[#334155] cursor-pointer">
+              <input
+                type="checkbox"
+                checked={seatingConfig.showSchoolHeader !== false}
+                onChange={(e) => onSeatingConfigChange({ showSchoolHeader: e.target.checked })}
+                className="accent-[#1F3864]"
+              />
+              Tampilkan header nama sekolah di denah
+            </label>
           </div>
         </div>
 
         {/* Paper & Orientation */}
         <div className="pt-4 border-t border-[#E2E8F0]">
           <h2 className="font-display font-bold text-[11px] uppercase tracking-wider text-[#64748B] mb-2">
-            Kertas, Margin &amp; Kop Panitia
+            Kertas, Orientasi &amp; Kop Sekolah
           </h2>
+
+          <div className="mb-2.5">
+            <label className="block text-[#44546A] font-medium mb-1">Orientasi Denah</label>
+            <div className="grid grid-cols-2 border border-[#CBD5E1]">
+              {(
+                [
+                  ['portrait', 'Potret (Tegak)'],
+                  ['landscape', 'Lanskap (Mendatar)'],
+                ] as const
+              ).map(([val, label], i) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => onSeatingConfigChange({ paperOrientation: val })}
+                  className={`py-1.5 px-1.5 text-[11px] font-semibold whitespace-nowrap ${
+                    i > 0 ? 'border-l border-[#CBD5E1]' : ''
+                  } ${
+                    seatingConfig.paperOrientation === val
+                      ? 'bg-[#1F3864] text-white'
+                      : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="grid grid-cols-2 gap-2 mb-2">
             <div>
@@ -467,44 +503,46 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
               </select>
             </div>
             <div>
-              <label className="block text-[#44546A] font-medium mb-1">Orientasi</label>
-              <select
-                value={seatingConfig.paperOrientation}
+              <label className="block text-[#44546A] font-medium mb-1">Margin Tepi (mm)</label>
+              <input
+                type="number"
+                step="0.5"
+                min="4"
+                max="25"
+                value={seatingConfig.marginMm}
                 onChange={(e) =>
-                  onSeatingConfigChange({
-                    paperOrientation: e.target.value as 'portrait' | 'landscape',
-                  })
+                  onSeatingConfigChange({ marginMm: Math.max(4, Number(e.target.value) || 8) })
                 }
-                className="w-full px-2 py-1.5 border border-[#CBD5E1] bg-white text-[#131C31]"
-              >
-                <option value="portrait">Portrait (Tegak)</option>
-                <option value="landscape">Landscape (Mendatar)</option>
-              </select>
+                className="w-full px-2 py-1.5 border border-[#CBD5E1] font-mono tabular-nums"
+              />
             </div>
           </div>
 
           <div className="mb-2">
-            <label className="block text-[#44546A] font-medium mb-1">Margin Tepi Kertas (mm)</label>
-            <input
-              type="number"
-              step="0.5"
-              min="4"
-              max="25"
-              value={seatingConfig.marginMm}
-              onChange={(e) =>
-                onSeatingConfigChange({ marginMm: Math.max(4, Number(e.target.value) || 8) })
-              }
-              className="w-full px-2 py-1 border border-[#CBD5E1] font-mono tabular-nums"
-            />
-          </div>
-
-          <div className="mb-2">
-            <label className="block text-[#44546A] font-medium mb-1">Judul Ujian (Kop)</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-[#44546A] font-medium">Judul Ujian (Kop Sekolah)</label>
+              <button
+                type="button"
+                onClick={() =>
+                  onSeatingConfigChange({
+                    showSchoolHeader: seatingConfig.showSchoolHeader === false,
+                  })
+                }
+                className={`px-1.5 py-0.5 text-[10px] font-semibold border ${
+                  seatingConfig.showSchoolHeader !== false
+                    ? 'border-[#1F3864] bg-[#EEF2FA] text-[#1F3864]'
+                    : 'border-[#CBD5E1] bg-[#F8FAFC] text-[#64748B]'
+                }`}
+              >
+                {seatingConfig.showSchoolHeader !== false ? 'Kop Tampil' : 'Kop Disembunyikan'}
+              </button>
+            </div>
             <input
               type="text"
+              disabled={seatingConfig.showSchoolHeader === false}
               value={seatingConfig.examTitle}
               onChange={(e) => onSeatingConfigChange({ examTitle: e.target.value })}
-              className="w-full px-2 py-1 border border-[#CBD5E1] text-[#131C31]"
+              className="w-full px-2 py-1 border border-[#CBD5E1] text-[#131C31] disabled:bg-[#F8FAFC] disabled:text-[#94A3B8]"
             />
           </div>
 
@@ -592,7 +630,48 @@ export const SeatingPlanStudio: React.FC<SeatingPlanStudioProps> = ({
             )}
           </div>
 
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex border border-[#CBD5E1]" title="Orientasi Denah">
+              {(
+                [
+                  ['portrait', 'Potret'],
+                  ['landscape', 'Lanskap'],
+                ] as const
+              ).map(([val, label], i) => (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => onSeatingConfigChange({ paperOrientation: val })}
+                  className={`px-2 py-1 text-[11px] font-semibold whitespace-nowrap ${
+                    i > 0 ? 'border-l border-[#CBD5E1]' : ''
+                  } ${
+                    seatingConfig.paperOrientation === val
+                      ? 'bg-[#1F3864] text-white'
+                      : 'bg-white text-[#44546A] hover:bg-[#F8FAFC]'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() =>
+                onSeatingConfigChange({
+                  showSchoolHeader: seatingConfig.showSchoolHeader === false,
+                })
+              }
+              title="Tampilkan atau sembunyikan header nama sekolah & lambang pada denah"
+              className={`px-2 py-1 border text-[11px] font-semibold whitespace-nowrap ${
+                seatingConfig.showSchoolHeader !== false
+                  ? 'border-[#1F3864] bg-[#EEF2FA] text-[#1F3864]'
+                  : 'border-[#CBD5E1] bg-white text-[#64748B] hover:bg-[#F8FAFC]'
+              }`}
+            >
+              {seatingConfig.showSchoolHeader !== false ? 'Kop Sekolah: Tampil' : 'Kop Sekolah: Sembunyi'}
+            </button>
+
             <div className="flex items-center gap-1.5">
               <Maximize2 className="w-3.5 h-3.5 text-[#64748B]" />
               <input
